@@ -29,7 +29,7 @@ public static class StarsCompute
         galaxyData = galaxy;
     }
 
-    private static void PlanetCompute(GalaxyData galaxyData, StarData star, PlanetData planetData)
+    public static void PlanetCompute(GalaxyData galaxyData, StarData star, PlanetData planetData)
     {
         var planetAlgorithm = PlanetModelingManager.Algorithm(planetData);
         planetData.data = new PlanetRawData(planetData.precision);
