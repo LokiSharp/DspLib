@@ -23,5 +23,4 @@ public class PlanetComputeTests
         var ts = afterDT.Subtract(beforeDT);
         Console.WriteLine("花费{0}ms", ts.TotalMilliseconds);
     }
-    
 }
