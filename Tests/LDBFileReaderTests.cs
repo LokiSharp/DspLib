@@ -1,11 +1,11 @@
 ﻿using DspLib;
+using Xunit;
 
 namespace Tests;
 
-[TestClass]
 public class LDBFileReaderTests
 {
-    [TestMethod]
+    [Fact]
     public void TestReadItemProtoSet()
     {
         const string filePath = "Prototypes\\ItemProtoSet.dat";
@@ -13,7 +13,7 @@ public class LDBFileReaderTests
         reader.ReadFile(filePath);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReadThemeProtoSet()
     {
         const string filePath = "Prototypes\\ThemeProtoSet.dat";
@@ -21,7 +21,7 @@ public class LDBFileReaderTests
         reader.ReadFile(filePath);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReadVeinProtoSet()
     {
         const string filePath = "Prototypes\\VeinProtoSet.dat";
@@ -29,7 +29,7 @@ public class LDBFileReaderTests
         reader.ReadFile(filePath);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReadRecipeProtoSet()
     {
         const string filePath = "Prototypes\\RecipeProtoSet.dat";

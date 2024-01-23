@@ -5,11 +5,11 @@ using Xunit.Abstractions;
 
 namespace Tests;
 
-public class DataBaseTests
+public class DatabaseInserterTests
 {
     private readonly ITestOutputHelper testOutputHelper;
 
-    public DataBaseTests(ITestOutputHelper testOutputHelper)
+    public DatabaseInserterTests(ITestOutputHelper testOutputHelper)
     {
         this.testOutputHelper = testOutputHelper;
         var builder = new ConfigurationBuilder()
@@ -23,9 +23,13 @@ public class DataBaseTests
     private static DatabaseSecrets databaseSecrets { get; set; }
 
     [Fact]
-    public void TestReadUserSecrets()
+    public void TestInsertGalaxiesInfo()
     {
-        var dspDbContext = new DspDbContext(databaseSecrets);
-        testOutputHelper.WriteLine(dspDbContext.Database.ProviderName);
+        var maxSeed = 10000;
+        for (var seed = 0; seed < maxSeed; seed++)
+        {
+            DatabaseInserter.InsertGalaxiesInfo(databaseSecrets, seed, 64);
+            testOutputHelper.WriteLine($"完成并提交：{seed}");
+        }
     }
 }

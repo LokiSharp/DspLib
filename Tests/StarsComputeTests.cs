@@ -1,13 +1,13 @@
 ﻿using DspLib;
 using DspLib.Dyson;
 using DspLib.Galaxy;
+using Xunit;
 
 namespace Tests;
 
-[TestClass]
 public class StarsComputeTests
 {
-    [TestMethod]
+    [Fact]
     public void TestStarsCompute()
     {
         PlanetModelingManager.Start();
@@ -23,7 +23,7 @@ public class StarsComputeTests
         Console.WriteLine("花费{0}ms", ts.TotalMilliseconds);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMultiplyStarsCompute()
     {
         PlanetModelingManager.Start();
@@ -47,7 +47,7 @@ public class StarsComputeTests
         Console.WriteLine("平均花费{0}ms", ts.TotalMilliseconds / seedCount);
     }
 
-    [TestMethod]
+    [Fact]
     public void Test100StarsComputeWithoutPlanetData()
     {
         PlanetModelingManager.Start();

@@ -1,33 +1,33 @@
 ﻿using System.Diagnostics;
 using DspLib;
+using Xunit;
 
 namespace Tests;
 
-[TestClass]
 public class LDBTests
 {
-    [TestMethod]
-    public void TestReadItem()
+    [Fact]
+    public void TestReadItemTest()
     {
         var result = LDB.items;
         Debug.Write(result.dataArray.Length);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReadTheme()
     {
         var result = LDB.themes;
         Debug.Write(result.dataArray.Length);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReadVein()
     {
         var result = LDB.veins;
         Debug.Write(result.dataArray.Length);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReadRecipe()
     {
         var result = LDB.recipes;

@@ -1,13 +1,13 @@
 ﻿using DspLib;
 using DspLib.Dyson;
 using DspLib.Galaxy;
+using Xunit;
 
 namespace Tests;
 
-[TestClass]
 public class PlanetComputeTests
 {
-    [TestMethod]
+    [Fact]
     public void TestPlanetCompute()
     {
         PlanetModelingManager.Start();
