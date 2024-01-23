@@ -1,6 +1,6 @@
 ﻿using DspLib.Algorithms;
 
-namespace DysonSphereProgramSeed.Dyson;
+namespace DspLib.Dyson;
 
 public static class RandomTable
 {

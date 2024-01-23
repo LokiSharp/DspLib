@@ -1,5 +1,5 @@
 ﻿using DspLib.Algorithms;
-using DysonSphereProgramSeed.Dyson;
+using DspLib.Dyson;
 
 public class PlanetAlgorithm4 : PlanetAlgorithm
 {

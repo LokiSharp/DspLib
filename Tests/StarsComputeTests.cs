@@ -1,6 +1,6 @@
 ﻿using DspLib;
+using DspLib.Dyson;
 using DspLib.Galaxy;
-using DysonSphereProgramSeed.Dyson;
 
 namespace Tests;
 
