@@ -1,4 +1,5 @@
 ﻿using DspLib;
+using DspLib.Enum;
 using DspLib.Galaxy;
 using DspLib.Protos;
 
@@ -63,6 +64,16 @@ public static class PlanetModelingManager
 
         planetAlgorithm?.Reset(planet.seed, planet);
         return planetAlgorithm;
+    }
+
+    public static int[] RefreshPlanetData(PlanetData planetData)
+    {
+        var planetAlgorithm = Algorithm(planetData);
+        if (planetAlgorithm != null)
+            if (planetData.type != EPlanetType.Gas)
+                return planetAlgorithm.SimpleGenerateVeins();
+
+        return null;
     }
 
     public static void Start()

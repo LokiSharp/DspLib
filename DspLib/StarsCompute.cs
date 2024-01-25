@@ -15,9 +15,8 @@ public static class StarsCompute
                     PlanetCompute(galaxy, star, planet);
             }));
         else
-            foreach (var star1 in galaxy.stars)
+            foreach (var star in galaxy.stars)
             {
-                var star = star1;
                 Parallel.ForEach(star.planets,
                     (Action<PlanetData>)(planetData => PlanetCompute(galaxy, star, planetData)));
             }
@@ -37,6 +36,5 @@ public static class StarsCompute
         planetAlgorithm.GenerateTerrain(planetData.mod_x, planetData.mod_y);
         planetAlgorithm.planet.star = star;
         planetAlgorithm.planet.galaxy = galaxyData;
-        planetAlgorithm.GenerateVeins();
     }
 }

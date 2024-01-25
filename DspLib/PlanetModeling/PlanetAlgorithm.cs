@@ -328,6 +328,137 @@ public abstract class PlanetAlgorithm
         }
     }
 
+    public virtual int[] SimpleGenerateVeins()
+    {
+        lock (planet)
+        {
+            var themeProto = LDB.themes.Select(planet.theme);
+            if (themeProto == null)
+                return null;
+            var dotNet35Random1 = new DotNet35Random(planet.seed);
+            dotNet35Random1.Next();
+            dotNet35Random1.Next();
+            dotNet35Random1.Next();
+            dotNet35Random1.Next();
+            var _birthSeed = dotNet35Random1.Next();
+            var dotNet35Random2 = new DotNet35Random(dotNet35Random1.Next());
+            var data = planet.data;
+            var num1 = 2.1f / planet.radius;
+            var veinProtos = PlanetModelingManager.veinProtos;
+            var veinModelIndexs = PlanetModelingManager.veinModelIndexs;
+            var veinModelCounts = PlanetModelingManager.veinModelCounts;
+            var veinProducts = PlanetModelingManager.veinProducts;
+            var destinationArray1 = new int[veinProtos.Length];
+            var destinationArray2 = new float[veinProtos.Length];
+            var destinationArray3 = new float[veinProtos.Length];
+            if (themeProto.VeinSpot != null)
+                Array.Copy(themeProto.VeinSpot, 0, destinationArray1, 1,
+                    Math.Min(themeProto.VeinSpot.Length, destinationArray1.Length - 1));
+            if (themeProto.VeinCount != null)
+                Array.Copy(themeProto.VeinCount, 0, destinationArray2, 1,
+                    Math.Min(themeProto.VeinCount.Length, destinationArray2.Length - 1));
+            if (themeProto.VeinOpacity != null)
+                Array.Copy(themeProto.VeinOpacity, 0, destinationArray3, 1,
+                    Math.Min(themeProto.VeinOpacity.Length, destinationArray3.Length - 1));
+            var p = 1f;
+            var spectr = planet.star.spectr;
+            switch (planet.star.type)
+            {
+                case EStarType.MainSeqStar:
+                    switch (spectr)
+                    {
+                        case ESpectrType.M:
+                            p = 2.5f;
+                            break;
+                        case ESpectrType.K:
+                            p = 1f;
+                            break;
+                        case ESpectrType.G:
+                            p = 0.7f;
+                            break;
+                        case ESpectrType.F:
+                            p = 0.6f;
+                            break;
+                        case ESpectrType.A:
+                            p = 1f;
+                            break;
+                        case ESpectrType.B:
+                            p = 0.4f;
+                            break;
+                        case ESpectrType.O:
+                            p = 1.6f;
+                            break;
+                    }
+
+                    break;
+                case EStarType.GiantStar:
+                    p = 2.5f;
+                    break;
+                case EStarType.WhiteDwarf:
+                    p = 3.5f;
+                    ++destinationArray1[9];
+                    ++destinationArray1[9];
+                    for (var index = 1; index < 12 && dotNet35Random1.NextDouble() < 0.44999998807907104; ++index)
+                        ++destinationArray1[9];
+                    destinationArray2[9] = 0.7f;
+                    destinationArray3[9] = 1f;
+                    ++destinationArray1[10];
+                    ++destinationArray1[10];
+                    for (var index = 1; index < 12 && dotNet35Random1.NextDouble() < 0.44999998807907104; ++index)
+                        ++destinationArray1[10];
+                    destinationArray2[10] = 0.7f;
+                    destinationArray3[10] = 1f;
+                    ++destinationArray1[12];
+                    for (var index = 1; index < 12 && dotNet35Random1.NextDouble() < 0.5; ++index)
+                        ++destinationArray1[12];
+                    destinationArray2[12] = 0.7f;
+                    destinationArray3[12] = 0.3f;
+                    break;
+                case EStarType.NeutronStar:
+                    p = 4.5f;
+                    ++destinationArray1[14];
+                    for (var index = 1; index < 12 && dotNet35Random1.NextDouble() < 0.64999997615814209; ++index)
+                        ++destinationArray1[14];
+                    destinationArray2[14] = 0.7f;
+                    destinationArray3[14] = 0.3f;
+                    break;
+                case EStarType.BlackHole:
+                    p = 5f;
+                    ++destinationArray1[14];
+                    for (var index = 1; index < 12 && dotNet35Random1.NextDouble() < 0.64999997615814209; ++index)
+                        ++destinationArray1[14];
+                    destinationArray2[14] = 0.7f;
+                    destinationArray3[14] = 0.3f;
+                    break;
+            }
+
+            for (var index1 = 0; index1 < themeProto.RareVeins.Length; ++index1)
+            {
+                var rareVein = themeProto.RareVeins[index1];
+                var num2 = planet.star.index == 0
+                    ? themeProto.RareSettings[index1 * 4]
+                    : themeProto.RareSettings[index1 * 4 + 1];
+                var rareSetting1 = themeProto.RareSettings[index1 * 4 + 2];
+                var rareSetting2 = themeProto.RareSettings[index1 * 4 + 3];
+                var num3 = rareSetting2;
+                var num4 = 1f - Mathf.Pow(1f - num2, p);
+                var num5 = 1f - Mathf.Pow(1f - rareSetting2, p);
+                var num6 = 1f - Mathf.Pow(1f - num3, p);
+                if (dotNet35Random1.NextDouble() < num4)
+                {
+                    ++destinationArray1[rareVein];
+                    destinationArray2[rareVein] = num5;
+                    destinationArray3[rareVein] = num5;
+                    for (var index2 = 1; index2 < 12 && dotNet35Random1.NextDouble() < rareSetting1; ++index2)
+                        ++destinationArray1[rareVein];
+                }
+            }
+
+            return destinationArray1;
+        }
+    }
+
+
     public static void CalcLandPercent(PlanetData _planet)
     {
         if (_planet == null)
