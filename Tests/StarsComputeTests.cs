@@ -2,10 +2,11 @@
 using DspLib.Dyson;
 using DspLib.Galaxy;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Tests;
 
-public class StarsComputeTests
+public class StarsComputeTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
     public void TestStarsCompute()
@@ -20,7 +21,7 @@ public class StarsComputeTests
         StarsCompute.Compute(gameDesc, out var galaxyData);
         var afterDT = DateTime.Now;
         var ts = afterDT.Subtract(beforeDT);
-        Console.WriteLine("花费{0}ms", ts.TotalMilliseconds);
+        testOutputHelper.WriteLine("花费{0}ms", ts.TotalMilliseconds);
     }
 
     [Fact]
@@ -38,17 +39,17 @@ public class StarsComputeTests
             gameDesc.SetForNewGame(mSeed, mStarCount);
             StarsCompute.Compute(gameDesc, out var galaxyData);
             galaxyDatas[$"{mSeed}-{mStarCount}"] = galaxyData;
-            Console.WriteLine("计算完成：{0}:{1}", mSeed, mStarCount);
+            testOutputHelper.WriteLine("计算完成：{0}:{1}", mSeed, mStarCount);
         }
 
         var afterDT = DateTime.Now;
         var ts = afterDT.Subtract(beforeDT);
-        Console.WriteLine("花费{0}ms", ts.TotalMilliseconds);
-        Console.WriteLine("平均花费{0}ms", ts.TotalMilliseconds / seedCount);
+        testOutputHelper.WriteLine("花费{0}ms", ts.TotalMilliseconds);
+        testOutputHelper.WriteLine("平均花费{0}ms", ts.TotalMilliseconds / seedCount);
     }
 
     [Fact]
-    public void Test100StarsComputeWithoutPlanetData()
+    public void TestMultiplyStarsComputeWithoutPlanetData()
     {
         PlanetModelingManager.Start();
         RandomTable.Init();
@@ -62,12 +63,12 @@ public class StarsComputeTests
             gameDesc.SetForNewGame(mSeed, mStarCount);
             StarsCompute.ComputeWithoutPlanetData(gameDesc, out var galaxyData);
             galaxyDatas[$"{mSeed}-{mStarCount}"] = galaxyData;
-            Console.WriteLine("计算完成：{0}:{1}", mSeed, mStarCount);
+            testOutputHelper.WriteLine("计算完成：{0}:{1}", mSeed, mStarCount);
         }
 
         var afterDT = DateTime.Now;
         var ts = afterDT.Subtract(beforeDT);
-        Console.WriteLine("花费{0}ms", ts.TotalMilliseconds);
-        Console.WriteLine("平均花费{0}ms", ts.TotalMilliseconds / seedCount);
+        testOutputHelper.WriteLine("花费{0}ms", ts.TotalMilliseconds);
+        testOutputHelper.WriteLine("平均花费{0}ms", ts.TotalMilliseconds / seedCount);
     }
 }

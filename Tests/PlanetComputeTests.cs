@@ -2,10 +2,11 @@
 using DspLib.Dyson;
 using DspLib.Galaxy;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Tests;
 
-public class PlanetComputeTests
+public class PlanetComputeTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
     public void TestPlanetCompute()
@@ -21,6 +22,6 @@ public class PlanetComputeTests
         StarsCompute.PlanetCompute(galaxyData, galaxyData.stars[0], galaxyData.stars[0].planets[1]);
         var afterDT = DateTime.Now;
         var ts = afterDT.Subtract(beforeDT);
-        Console.WriteLine("花费{0}ms", ts.TotalMilliseconds);
+        testOutputHelper.WriteLine("花费{0}ms", ts.TotalMilliseconds);
     }
 }
