@@ -3,7 +3,6 @@ using DspLib.Enum;
 
 namespace DspLib.DataBase;
 
-[Table("galaxies_info")]
 public class GalaxiesInfo
 {
     public int GalaxiesInfoId { get; set; }

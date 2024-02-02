@@ -6,6 +6,16 @@ namespace DspLib.DataBase;
 
 public static class DatabaseInserter
 {
+    public static string GetPlanetTypeString(PlanetData planetData)
+    {
+        var typeString = "未知";
+        var LDBT = LDB.themes;
+        var themeProto = LDBT.Select(planetData.theme);
+        if (themeProto != null)
+            typeString = themeProto.DisplayName;
+        return typeString;
+    }
+
     public static void InsertGalaxiesInfo(DatabaseSecrets databaseSecrets, int seed, int starCount)
     {
         using (var context = new DspDbContext(databaseSecrets))
@@ -15,11 +25,9 @@ public static class DatabaseInserter
             var gameDesc = new GameDesc();
             gameDesc.SetForNewGame(seed, starCount);
             StarsCompute.Compute(gameDesc, out var galaxyData);
-            var galaxiesInfos = new List<GalaxiesInfo>();
-            foreach (var star in galaxyData.stars)
-            {
-                var resourceCountList = GetMineCount(star);
-                galaxiesInfos.Add(new GalaxiesInfo
+            var galaxiesInfos = (from star in galaxyData.stars
+                let resourceCountList = GetMineCount(star)
+                select new GalaxiesInfo
                 {
                     种子号码 = seed,
                     恒星类型 = star.type,
@@ -30,15 +38,10 @@ public static class DatabaseInserter
                     星系坐标x = (int)Math.Round(star.uPosition.x, 0, MidpointRounding.AwayFromZero),
                     星系坐标y = (int)Math.Round(star.uPosition.y, 0, MidpointRounding.AwayFromZero),
                     星系坐标z = (int)Math.Round(star.uPosition.z, 0, MidpointRounding.AwayFromZero),
-                    潮汐星数 = star.planets.Count(planet =>
-                        planet.singularity == (
-                            EPlanetSingularity.TidalLocked &
-                            EPlanetSingularity.TidalLocked2 &
-                            EPlanetSingularity.TidalLocked4)
-                    ),
-                    最多卫星 = star.planets.Aggregate(
-                        (a, b) =>
-                            a.orbitAround > b.orbitAround ? a : b).orbitAround,
+                    潮汐星数 = star.planets.Count(planet => planet.singularity == (EPlanetSingularity.TidalLocked &
+                                                                               EPlanetSingularity.TidalLocked2 &
+                                                                               EPlanetSingularity.TidalLocked4)),
+                    最多卫星 = star.planets.Aggregate((a, b) => a.orbitAround > b.orbitAround ? a : b).orbitAround,
                     星球数量 = star.planetCount,
                     星球类型 = star.planets.Select(planet => planet.type).Distinct().ToArray(),
                     是否有水 = star.planets.Any(planet => planet.waterItemId == 1000),
@@ -57,10 +60,41 @@ public static class DatabaseInserter
                     光栅石矿 = resourceCountList[EVeinType.Grat],
                     刺笋矿脉 = resourceCountList[EVeinType.Bamboo],
                     单极磁矿 = resourceCountList[EVeinType.Mag]
-                });
-            }
+                }).ToList();
+
+            var planetsTypeCountDictionary = GetPlanetsTypeCount(galaxyData);
+            var seedPlanetsTypeCountInfo = new SeedPlanetsTypeCountInfo
+            {
+                种子号 = seed,
+                地中海 = planetsTypeCountDictionary[1],
+                气态巨星1 = planetsTypeCountDictionary[2],
+                气态巨星2 = planetsTypeCountDictionary[3],
+                冰巨星1 = planetsTypeCountDictionary[4],
+                冰巨星2 = planetsTypeCountDictionary[5],
+                干旱荒漠 = planetsTypeCountDictionary[6],
+                灰烬冻土 = planetsTypeCountDictionary[7],
+                海洋丛林 = planetsTypeCountDictionary[8],
+                熔岩 = planetsTypeCountDictionary[9],
+                冰原冻土 = planetsTypeCountDictionary[10],
+                贫瘠荒漠 = planetsTypeCountDictionary[11],
+                戈壁 = planetsTypeCountDictionary[12],
+                火山灰 = planetsTypeCountDictionary[13],
+                红石 = planetsTypeCountDictionary[14],
+                草原 = planetsTypeCountDictionary[15],
+                水世界 = planetsTypeCountDictionary[16],
+                黑石盐滩 = planetsTypeCountDictionary[17],
+                樱林海 = planetsTypeCountDictionary[18],
+                飓风石林 = planetsTypeCountDictionary[19],
+                猩红冰湖 = planetsTypeCountDictionary[20],
+                气态巨星3 = planetsTypeCountDictionary[21],
+                热带草原 = planetsTypeCountDictionary[22],
+                橙晶荒漠 = planetsTypeCountDictionary[23],
+                极寒冻土 = planetsTypeCountDictionary[24],
+                潘多拉沼泽 = planetsTypeCountDictionary[25]
+            };
 
             context.GalaxiesInfos.AddRange(galaxiesInfos);
+            context.SeedPlanetsTypeCountInfo.AddRange(seedPlanetsTypeCountInfo);
             context.SaveChanges();
         }
     }
@@ -100,5 +134,17 @@ public static class DatabaseInserter
         }
 
         return starVeinCountDictionary;
+    }
+
+    public static Dictionary<int, int> GetPlanetsTypeCount(GalaxyData galaxy)
+    {
+        var starTypeCountDictionary = Enumerable.Range(0, 26).ToDictionary(key => key, value => 0);
+
+        foreach (var star in galaxy.stars)
+        foreach (var planet in star.planets)
+            if (!starTypeCountDictionary.TryAdd(planet.theme, 1))
+                starTypeCountDictionary[planet.theme] += 1;
+
+        return starTypeCountDictionary;
     }
 }

@@ -12,6 +12,7 @@ public class DspDbContext : DbContext
     }
 
     public DbSet<GalaxiesInfo> GalaxiesInfos { get; set; }
+    public DbSet<SeedPlanetsTypeCountInfo> SeedPlanetsTypeCountInfo { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -6,7 +6,6 @@ namespace Tests;
 
 public class LDBTests(ITestOutputHelper testOutputHelper)
 {
-
     [Fact]
     public void TestReadItemTest()
     {

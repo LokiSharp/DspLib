@@ -16,10 +16,8 @@ public static class StarsCompute
             }));
         else
             foreach (var star in galaxy.stars)
-            {
                 Parallel.ForEach(star.planets,
                     (Action<PlanetData>)(planetData => PlanetCompute(galaxy, star, planetData)));
-            }
     }
 
     public static void ComputeWithoutPlanetData(GameDesc gameDesc, out GalaxyData galaxyData)
