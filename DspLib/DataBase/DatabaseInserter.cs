@@ -93,8 +93,34 @@ public static class DatabaseInserter
                 潘多拉沼泽 = planetsTypeCountDictionary[25]
             };
 
-            context.GalaxiesInfos.AddRange(galaxiesInfos);
+            var starsTypeCountDictionary = GetStarsTypeCount(galaxyData);
+            var seedStarsTypeCountInfo = new SeedStarsTypeCountInfo
+            {
+                种子号 = seed,
+                M型恒星 = starsTypeCountDictionary[1],
+                K型恒星 = starsTypeCountDictionary[2],
+                G型恒星 = starsTypeCountDictionary[3],
+                F型恒星 = starsTypeCountDictionary[4],
+                A型恒星 = starsTypeCountDictionary[5],
+                B型恒星 = starsTypeCountDictionary[6],
+                O型恒星 = starsTypeCountDictionary[7],
+                X型恒星 = starsTypeCountDictionary[8],
+                M型巨星 = starsTypeCountDictionary[9],
+                K型巨星 = starsTypeCountDictionary[10],
+                G型巨星 = starsTypeCountDictionary[11],
+                F型巨星 = starsTypeCountDictionary[12],
+                A型巨星 = starsTypeCountDictionary[13],
+                B型巨星 = starsTypeCountDictionary[14],
+                O型巨星 = starsTypeCountDictionary[15],
+                X型巨星 = starsTypeCountDictionary[16],
+                白矮星 = starsTypeCountDictionary[17],
+                中子星 = starsTypeCountDictionary[18],
+                黑洞 = starsTypeCountDictionary[19]
+            };
+
+            context.GalaxiesInfo.AddRange(galaxiesInfos);
             context.SeedPlanetsTypeCountInfo.AddRange(seedPlanetsTypeCountInfo);
+            context.SeedStarsTypeCountInfo.AddRange(seedStarsTypeCountInfo);
             context.SaveChanges();
         }
     }
@@ -144,6 +170,51 @@ public static class DatabaseInserter
         foreach (var planet in star.planets)
             if (!starTypeCountDictionary.TryAdd(planet.theme, 1))
                 starTypeCountDictionary[planet.theme] += 1;
+
+        return starTypeCountDictionary;
+    }
+
+    public static Dictionary<int, int> GetStarsTypeCount(GalaxyData galaxy)
+    {
+        var starTypeCountDictionary = Enumerable.Range(0, 20).ToDictionary(key => key, value => 0);
+        foreach (var star in galaxy.stars)
+        {
+            var starTypeNum = star.type switch
+            {
+                EStarType.MainSeqStar =>
+                    star.spectr switch
+                    {
+                        ESpectrType.M => 1,
+                        ESpectrType.K => 2,
+                        ESpectrType.G => 3,
+                        ESpectrType.F => 4,
+                        ESpectrType.A => 5,
+                        ESpectrType.B => 6,
+                        ESpectrType.O => 7,
+                        ESpectrType.X => 8,
+                        _ => throw new ArgumentOutOfRangeException()
+                    },
+                EStarType.GiantStar =>
+                    star.spectr switch
+                    {
+                        ESpectrType.M => 9,
+                        ESpectrType.K => 10,
+                        ESpectrType.G => 11,
+                        ESpectrType.F => 12,
+                        ESpectrType.A => 13,
+                        ESpectrType.B => 14,
+                        ESpectrType.O => 15,
+                        ESpectrType.X => 16,
+                        _ => throw new ArgumentOutOfRangeException()
+                    },
+                EStarType.WhiteDwarf => 17,
+                EStarType.NeutronStar => 18,
+                EStarType.BlackHole => 19,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            if (!starTypeCountDictionary.TryAdd(starTypeNum, 1))
+                starTypeCountDictionary[starTypeNum] += 1;
+        }
 
         return starTypeCountDictionary;
     }
