@@ -1,4 +1,6 @@
-﻿using DspLib.DataBase;
+﻿using System.Diagnostics;
+using System.Text;
+using DspLib.DataBase;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 using Xunit.Abstractions;
@@ -7,11 +9,13 @@ namespace Tests;
 
 public class DatabaseInserterTests
 {
-    private readonly ITestOutputHelper testOutputHelper;
+    private readonly Stopwatch _stopwatch;
+    private readonly ITestOutputHelper _testOutputHelper;
 
     public DatabaseInserterTests(ITestOutputHelper testOutputHelper)
     {
-        this.testOutputHelper = testOutputHelper;
+        _stopwatch = new Stopwatch();
+        _testOutputHelper = testOutputHelper;
         var builder = new ConfigurationBuilder()
             .AddEnvironmentVariables();
         configuration = builder.Build();
@@ -26,13 +30,40 @@ public class DatabaseInserterTests
     public void TestInsertGalaxiesInfo()
     {
         var startSeed = 0;
-        var maxSeed = 10000;
+        var maxSeed = 99999999;
+        _stopwatch.Start();
         for (var seed = startSeed; seed < maxSeed; seed++)
         {
-            using var context = new DspDbContext(databaseSecrets);
-            if (context.SeedInfo.Any(seedInfo => seedInfo.种子号 == seed)) continue;
+            if (seed % 100 == 0) DrawProgressBar(seed, maxSeed);
+            if (new DspDbContext(databaseSecrets).SeedInfo.Any(seedInfo => seedInfo.种子号 == seed)) continue;
             DatabaseInserter.InsertGalaxiesInfo(databaseSecrets, seed, 64);
-            testOutputHelper.WriteLine($"完成并提交：{seed}");
         }
+
+        _stopwatch.Stop();
+    }
+
+    private void DrawProgressBar(int progress, int total)
+    {
+        const int barSize = 50;
+        var percent = (float)progress / total;
+
+        var charsToDraw = (int)(percent * barSize);
+
+        var progressBar = new StringBuilder("[");
+        progressBar.Append('#', charsToDraw);
+        progressBar.Append(' ', barSize - charsToDraw);
+        progressBar.Append(']');
+
+        progressBar.Append($" {percent * 100:F2}%");
+        progressBar.Append($" {progress}/{total}");
+        if (percent > 0)
+        {
+            var elapsed = _stopwatch.Elapsed;
+            var estimatedTotalTime = TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / percent);
+            progressBar.Append($" 单个花费时间: {elapsed.TotalMilliseconds / progress}");
+            progressBar.Append($" 总需要时长: {estimatedTotalTime - elapsed}");
+        }
+
+        _testOutputHelper.WriteLine(progressBar.ToString());
     }
 }
