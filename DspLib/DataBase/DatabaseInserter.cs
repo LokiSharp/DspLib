@@ -25,11 +25,52 @@ public static class DatabaseInserter
             var gameDesc = new GameDesc();
             gameDesc.SetForNewGame(seed, starCount);
             StarsCompute.Compute(gameDesc, out var galaxyData);
-            var galaxiesInfos = (from star in galaxyData.stars
+
+            var starsTypeCountDictionary = GetStarsTypeCount(galaxyData);
+            var planetsTypeCountDictionary = GetPlanetsTypeCount(galaxyData);
+
+            var seedInfo = new SeedInfo
+            {
+                种子号 = seed,
+                巨星数 = galaxyData.stars.Count(star => star.type == EStarType.GiantStar),
+                最多卫星 = galaxyData.stars.Max(star => star.planets.Count(planet => planet.orbitAround > 0)),
+                最多潮汐星 = galaxyData.stars.Max(star => star.planets.Count(
+                    planet => planet.singularity is
+                        EPlanetSingularity.TidalLocked or
+                        EPlanetSingularity.TidalLocked2 or
+                        EPlanetSingularity.TidalLocked4
+                )),
+                潮汐星球数 = galaxyData.stars.Sum(star => star.planets.Count(
+                    planet => planet.singularity is
+                        EPlanetSingularity.TidalLocked or
+                        EPlanetSingularity.TidalLocked2 or
+                        EPlanetSingularity.TidalLocked4
+                )),
+                熔岩星球数 = galaxyData.stars.Sum(star => star.planets.Count(
+                    planet => planet.type is EPlanetType.Vocano
+                )),
+                海洋星球数 = galaxyData.stars.Sum(star => star.planets.Count(
+                    planet => planet.type is EPlanetType.Ocean
+                )),
+                沙漠星球数 = galaxyData.stars.Sum(star => star.planets.Count(
+                    planet => planet.type is EPlanetType.Desert
+                )),
+                冰冻星球数 = galaxyData.stars.Sum(star => star.planets.Count(
+                    planet => planet.type is EPlanetType.Ice
+                )),
+                气态星球数 = galaxyData.stars.Sum(star => star.planets.Count(
+                    planet => planet.type is EPlanetType.Gas
+                )),
+                总星球数量 = galaxyData.stars.Sum(star => star.planetCount),
+                最高亮度 = galaxyData.stars.Max(star => star.dysonLumino),
+                星球总亮度 = galaxyData.stars.Sum(star => star.dysonLumino)
+            };
+
+            var seedGalaxiesInfos = (from star in galaxyData.stars
                 let resourceCountList = GetMineCount(star)
-                select new GalaxiesInfo
+                select new SeedGalaxiesInfo
                 {
-                    种子号码 = seed,
+                    SeedInfo = seedInfo,
                     恒星类型 = star.type,
                     光谱类型 = star.spectr,
                     恒星光度 = star.dysonLumino,
@@ -62,10 +103,33 @@ public static class DatabaseInserter
                     单极磁矿 = resourceCountList[EVeinType.Mag]
                 }).ToList();
 
-            var planetsTypeCountDictionary = GetPlanetsTypeCount(galaxyData);
+            var seedStarsTypeCountInfo = new SeedStarsTypeCountInfo
+            {
+                SeedInfo = seedInfo,
+                M型恒星 = starsTypeCountDictionary[1],
+                K型恒星 = starsTypeCountDictionary[2],
+                G型恒星 = starsTypeCountDictionary[3],
+                F型恒星 = starsTypeCountDictionary[4],
+                A型恒星 = starsTypeCountDictionary[5],
+                B型恒星 = starsTypeCountDictionary[6],
+                O型恒星 = starsTypeCountDictionary[7],
+                X型恒星 = starsTypeCountDictionary[8],
+                M型巨星 = starsTypeCountDictionary[9],
+                K型巨星 = starsTypeCountDictionary[10],
+                G型巨星 = starsTypeCountDictionary[11],
+                F型巨星 = starsTypeCountDictionary[12],
+                A型巨星 = starsTypeCountDictionary[13],
+                B型巨星 = starsTypeCountDictionary[14],
+                O型巨星 = starsTypeCountDictionary[15],
+                X型巨星 = starsTypeCountDictionary[16],
+                白矮星 = starsTypeCountDictionary[17],
+                中子星 = starsTypeCountDictionary[18],
+                黑洞 = starsTypeCountDictionary[19]
+            };
+
             var seedPlanetsTypeCountInfo = new SeedPlanetsTypeCountInfo
             {
-                种子号 = seed,
+                SeedInfo = seedInfo,
                 地中海 = planetsTypeCountDictionary[1],
                 气态巨星1 = planetsTypeCountDictionary[2],
                 气态巨星2 = planetsTypeCountDictionary[3],
@@ -93,34 +157,14 @@ public static class DatabaseInserter
                 潘多拉沼泽 = planetsTypeCountDictionary[25]
             };
 
-            var starsTypeCountDictionary = GetStarsTypeCount(galaxyData);
-            var seedStarsTypeCountInfo = new SeedStarsTypeCountInfo
-            {
-                种子号 = seed,
-                M型恒星 = starsTypeCountDictionary[1],
-                K型恒星 = starsTypeCountDictionary[2],
-                G型恒星 = starsTypeCountDictionary[3],
-                F型恒星 = starsTypeCountDictionary[4],
-                A型恒星 = starsTypeCountDictionary[5],
-                B型恒星 = starsTypeCountDictionary[6],
-                O型恒星 = starsTypeCountDictionary[7],
-                X型恒星 = starsTypeCountDictionary[8],
-                M型巨星 = starsTypeCountDictionary[9],
-                K型巨星 = starsTypeCountDictionary[10],
-                G型巨星 = starsTypeCountDictionary[11],
-                F型巨星 = starsTypeCountDictionary[12],
-                A型巨星 = starsTypeCountDictionary[13],
-                B型巨星 = starsTypeCountDictionary[14],
-                O型巨星 = starsTypeCountDictionary[15],
-                X型巨星 = starsTypeCountDictionary[16],
-                白矮星 = starsTypeCountDictionary[17],
-                中子星 = starsTypeCountDictionary[18],
-                黑洞 = starsTypeCountDictionary[19]
-            };
+            seedInfo.SeedGalaxiesInfos = seedGalaxiesInfos;
+            seedInfo.SeedStarsTypeCountInfo = seedStarsTypeCountInfo;
+            seedInfo.SeedPlanetsTypeCountInfo = seedPlanetsTypeCountInfo;
 
-            context.GalaxiesInfo.AddRange(galaxiesInfos);
+            context.SeedGalaxiesInfo.AddRange(seedGalaxiesInfos);
             context.SeedPlanetsTypeCountInfo.AddRange(seedPlanetsTypeCountInfo);
             context.SeedStarsTypeCountInfo.AddRange(seedStarsTypeCountInfo);
+            context.SeedInfo.AddRange(seedInfo);
             context.SaveChanges();
         }
     }

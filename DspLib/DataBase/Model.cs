@@ -11,7 +11,8 @@ public class DspDbContext : DbContext
         _databaseSecrets = databaseSecrets;
     }
 
-    public DbSet<GalaxiesInfo> GalaxiesInfo { get; set; }
+    public DbSet<SeedInfo> SeedInfo { get; set; }
+    public DbSet<SeedGalaxiesInfo> SeedGalaxiesInfo { get; set; }
     public DbSet<SeedPlanetsTypeCountInfo> SeedPlanetsTypeCountInfo { get; set; }
 
     public DbSet<SeedStarsTypeCountInfo> SeedStarsTypeCountInfo { get; set; }

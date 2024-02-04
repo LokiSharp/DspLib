@@ -25,8 +25,9 @@ public class DatabaseInserterTests
     [Fact]
     public void TestInsertGalaxiesInfo()
     {
-        var maxSeed = 10;
-        for (var seed = 0; seed < maxSeed; seed++)
+        var startSeed = 0;
+        var maxSeed = 100;
+        for (var seed = startSeed; seed < maxSeed; seed++)
         {
             DatabaseInserter.InsertGalaxiesInfo(databaseSecrets, seed, 64);
             testOutputHelper.WriteLine($"完成并提交：{seed}");

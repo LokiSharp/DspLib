@@ -3,11 +3,11 @@ using DspLib.Enum;
 
 namespace DspLib.DataBase;
 
-public class GalaxiesInfo
+public class SeedGalaxiesInfo
 {
-    public int GalaxiesInfoId { get; set; }
-
-    [Column(TypeName = "INT(4)")] public int 种子号码 { get; set; }
+    public int SeedGalaxiesInfoId { get; set; }
+    [Column(TypeName = "INT(4) UNSIGNED")] public int SeedInfoId { get; set; }
+    public SeedInfo SeedInfo { get; set; }
 
     [Column(TypeName = "TINYINT(1) UNSIGNED")]
     public EStarType 恒星类型 { get; set; }

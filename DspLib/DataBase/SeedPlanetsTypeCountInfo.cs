@@ -5,8 +5,8 @@ namespace DspLib.DataBase;
 public class SeedPlanetsTypeCountInfo
 {
     public int SeedPlanetsTypeCountInfoId { get; set; }
-
-    [Column(TypeName = "INT(4)")] public int 种子号 { get; set; }
+    [Column(TypeName = "INT(4) UNSIGNED")] public int SeedInfoId { get; set; }
+    public SeedInfo SeedInfo { get; set; }
 
     [Column(TypeName = "TINYINT(1) UNSIGNED")]
     public int 地中海 { get; set; }
