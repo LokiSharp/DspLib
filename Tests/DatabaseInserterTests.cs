@@ -26,9 +26,11 @@ public class DatabaseInserterTests
     public void TestInsertGalaxiesInfo()
     {
         var startSeed = 0;
-        var maxSeed = 100;
+        var maxSeed = 10000;
         for (var seed = startSeed; seed < maxSeed; seed++)
         {
+            using var context = new DspDbContext(databaseSecrets);
+            if (context.SeedInfo.Any(seedInfo => seedInfo.种子号 == seed)) continue;
             DatabaseInserter.InsertGalaxiesInfo(databaseSecrets, seed, 64);
             testOutputHelper.WriteLine($"完成并提交：{seed}");
         }

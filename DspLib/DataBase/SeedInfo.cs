@@ -14,6 +14,8 @@ public class SeedInfo
     public int 最多卫星 { get; set; }
     public int 最多潮汐星 { get; set; }
     public int 潮汐星球数 { get; set; }
+    public int 最多潮汐永昼永夜 { get; set; }
+    public int 潮汐永昼永夜数 { get; set; }
     public int 熔岩星球数 { get; set; }
     public int 海洋星球数 { get; set; }
     public int 沙漠星球数 { get; set; }

@@ -46,6 +46,12 @@ public static class DatabaseInserter
                         EPlanetSingularity.TidalLocked2 or
                         EPlanetSingularity.TidalLocked4
                 )),
+                最多潮汐永昼永夜 = galaxyData.stars.Max(star => star.planets.Count(
+                    planet => planet.singularity is EPlanetSingularity.TidalLocked
+                )),
+                潮汐永昼永夜数 = galaxyData.stars.Sum(star => star.planets.Count(
+                    planet => planet.singularity is EPlanetSingularity.TidalLocked
+                )),
                 熔岩星球数 = galaxyData.stars.Sum(star => star.planets.Count(
                     planet => planet.type is EPlanetType.Vocano
                 )),
