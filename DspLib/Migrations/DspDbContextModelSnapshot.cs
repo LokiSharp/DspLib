@@ -18,34 +18,16 @@ namespace DspLib.Migrations
                 .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("DspLib.DataBase.SeedGalaxiesInfo", b =>
+            modelBuilder.Entity("DspLib.DataBase.SeedGalaxyInfo", b =>
                 {
-                    b.Property<int>("SeedGalaxiesInfoId")
+                    b.Property<int>("SeedGalaxyInfoId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     b.Property<uint>("SeedInfoId")
                         .HasColumnType("INT(4) UNSIGNED");
 
-                    b.Property<byte>("光栅石矿")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
                     b.Property<byte?>("光谱类型")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("分形硅矿")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("刺笋矿脉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("单极磁矿")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("原油涌泉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("可燃冰矿")
                         .HasColumnType("TINYINT(1) UNSIGNED");
 
                     b.Property<float>("恒星光度")
@@ -79,44 +61,20 @@ namespace DspLib.Migrations
                     b.Property<byte>("最多卫星")
                         .HasColumnType("TINYINT(1) UNSIGNED");
 
-                    b.Property<byte>("有机晶体矿")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
                     b.Property<bool>("有硫酸否")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<byte>("潮汐星数")
                         .HasColumnType("TINYINT(1) UNSIGNED");
 
-                    b.Property<byte>("煤矿脉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
                     b.Property<bool>("环盖首星")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<byte>("石矿脉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("硅矿脉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("金伯利矿")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("钛矿脉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("铁矿脉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.Property<byte>("铜矿脉")
-                        .HasColumnType("TINYINT(1) UNSIGNED");
-
-                    b.HasKey("SeedGalaxiesInfoId");
+                    b.HasKey("SeedGalaxyInfoId");
 
                     b.HasIndex("SeedInfoId");
 
-                    b.ToTable("SeedGalaxiesInfo");
+                    b.ToTable("SeedGalaxyInfo");
                 });
 
             modelBuilder.Entity("DspLib.DataBase.SeedInfo", b =>
@@ -341,10 +299,10 @@ namespace DspLib.Migrations
                     b.ToTable("SeedStarsTypeCountInfo");
                 });
 
-            modelBuilder.Entity("DspLib.DataBase.SeedGalaxiesInfo", b =>
+            modelBuilder.Entity("DspLib.DataBase.SeedGalaxyInfo", b =>
                 {
                     b.HasOne("DspLib.DataBase.SeedInfo", "SeedInfo")
-                        .WithMany("SeedGalaxiesInfos")
+                        .WithMany("SeedGalaxyInfos")
                         .HasForeignKey("SeedInfoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -376,7 +334,7 @@ namespace DspLib.Migrations
 
             modelBuilder.Entity("DspLib.DataBase.SeedInfo", b =>
                 {
-                    b.Navigation("SeedGalaxiesInfos");
+                    b.Navigation("SeedGalaxyInfos");
 
                     b.Navigation("SeedPlanetsTypeCountInfo")
                         .IsRequired();

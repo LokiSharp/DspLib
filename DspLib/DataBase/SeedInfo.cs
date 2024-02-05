@@ -5,7 +5,7 @@ namespace DspLib.DataBase;
 public class SeedInfo
 {
     [Column(TypeName = "INT(4) UNSIGNED")] public int SeedInfoId { get; set; }
-    public List<SeedGalaxiesInfo> SeedGalaxiesInfos { get; set; }
+    public List<SeedGalaxyInfo> SeedGalaxyInfos { get; set; }
     public SeedPlanetsTypeCountInfo SeedPlanetsTypeCountInfo { get; set; }
     public SeedStarsTypeCountInfo SeedStarsTypeCountInfo { get; set; }
     [Column(TypeName = "INT(4)")] public int 种子号 { get; set; }

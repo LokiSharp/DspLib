@@ -24,7 +24,7 @@ public static class DatabaseInserter
             RandomTable.Init();
             var gameDesc = new GameDesc();
             gameDesc.SetForNewGame(seed, starCount);
-            StarsCompute.Compute(gameDesc, out var galaxyData);
+            StarsCompute.ComputeWithoutPlanetData(gameDesc, out var galaxyData);
 
             var starsTypeCountDictionary = GetStarsTypeCount(galaxyData);
             var planetsTypeCountDictionary = GetPlanetsTypeCount(galaxyData);
@@ -72,9 +72,8 @@ public static class DatabaseInserter
                 星球总亮度 = galaxyData.stars.Sum(star => star.dysonLumino)
             };
 
-            var seedGalaxiesInfos = (from star in galaxyData.stars
-                let resourceCountList = GetMineCount(star)
-                select new SeedGalaxiesInfo
+            var seedGalaxyInfos = (from star in galaxyData.stars
+                select new SeedGalaxyInfo
                 {
                     SeedInfo = seedInfo,
                     恒星类型 = star.type,
@@ -86,27 +85,12 @@ public static class DatabaseInserter
                     星系坐标y = (int)Math.Round(star.uPosition.y, 0, MidpointRounding.AwayFromZero),
                     星系坐标z = (int)Math.Round(star.uPosition.z, 0, MidpointRounding.AwayFromZero),
                     潮汐星数 = star.planets.Count(planet => planet.singularity == (EPlanetSingularity.TidalLocked &
-                                                                               EPlanetSingularity.TidalLocked2 &
                                                                                EPlanetSingularity.TidalLocked4)),
                     最多卫星 = star.planets.Aggregate((a, b) => a.orbitAround > b.orbitAround ? a : b).orbitAround,
                     星球数量 = star.planetCount,
                     星球类型 = star.planets.Select(planet => planet.type).Distinct().ToArray(),
                     是否有水 = star.planets.Any(planet => planet.waterItemId == 1000),
                     有硫酸否 = star.planets.Any(planet => planet.waterItemId == 1116),
-                    铁矿脉 = resourceCountList[EVeinType.Iron],
-                    铜矿脉 = resourceCountList[EVeinType.Copper],
-                    硅矿脉 = resourceCountList[EVeinType.Silicium],
-                    钛矿脉 = resourceCountList[EVeinType.Titanium],
-                    石矿脉 = resourceCountList[EVeinType.Stone],
-                    煤矿脉 = resourceCountList[EVeinType.Coal],
-                    原油涌泉 = resourceCountList[EVeinType.Oil],
-                    可燃冰矿 = resourceCountList[EVeinType.Fireice],
-                    金伯利矿 = resourceCountList[EVeinType.Diamond],
-                    分形硅矿 = resourceCountList[EVeinType.Fractal],
-                    有机晶体矿 = resourceCountList[EVeinType.Crysrub],
-                    光栅石矿 = resourceCountList[EVeinType.Grat],
-                    刺笋矿脉 = resourceCountList[EVeinType.Bamboo],
-                    单极磁矿 = resourceCountList[EVeinType.Mag]
                 }).ToList();
 
             var seedStarsTypeCountInfo = new SeedStarsTypeCountInfo
@@ -163,11 +147,11 @@ public static class DatabaseInserter
                 潘多拉沼泽 = planetsTypeCountDictionary[25]
             };
 
-            seedInfo.SeedGalaxiesInfos = seedGalaxiesInfos;
+            seedInfo.SeedGalaxyInfos = seedGalaxyInfos;
             seedInfo.SeedStarsTypeCountInfo = seedStarsTypeCountInfo;
             seedInfo.SeedPlanetsTypeCountInfo = seedPlanetsTypeCountInfo;
 
-            context.SeedGalaxiesInfo.AddRange(seedGalaxiesInfos);
+            context.SeedGalaxyInfo.AddRange(seedGalaxyInfos);
             context.SeedPlanetsTypeCountInfo.AddRange(seedPlanetsTypeCountInfo);
             context.SeedStarsTypeCountInfo.AddRange(seedStarsTypeCountInfo);
             context.SeedInfo.AddRange(seedInfo);
