@@ -9,7 +9,8 @@ public class LDBFileReader
 {
     public object ReadFile(string filePath)
     {
-        using var reader = new BinaryReader(File.Open(filePath, FileMode.Open));
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var reader = new BinaryReader(stream);
         // 读取文件头部信息
         var header = reader.ReadBytes(28);
 

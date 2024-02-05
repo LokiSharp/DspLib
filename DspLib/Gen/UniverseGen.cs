@@ -6,8 +6,11 @@ namespace DspLib.Galaxy;
 public static class UniverseGen
 {
     public static int algoVersion = 20200403;
-    private static List<VectorLF3> tmp_poses;
-    private static List<VectorLF3> tmp_drunk;
+
+    [ThreadStatic] private static List<VectorLF3> tmp_poses;
+
+    [ThreadStatic] private static List<VectorLF3> tmp_drunk;
+
     private static int[] tmp_state = null;
 
     public static GalaxyData CreateGalaxy(GameDesc gameDesc)

@@ -16,6 +16,7 @@ public class DatabaseInserterTests
     {
         _stopwatch = new Stopwatch();
         _testOutputHelper = testOutputHelper;
+        Console.SetOut(new TestOutputHelperWriter(testOutputHelper));
         var builder = new ConfigurationBuilder()
             .AddEnvironmentVariables();
         configuration = builder.Build();
@@ -31,39 +32,21 @@ public class DatabaseInserterTests
     {
         var startSeed = 0;
         var maxSeed = 99999999;
-        _stopwatch.Start();
-        for (var seed = startSeed; seed < maxSeed; seed++)
-        {
-            if (seed % 100 == 0) DrawProgressBar(seed, maxSeed);
-            if (new DspDbContext(databaseSecrets).SeedInfo.Any(seedInfo => seedInfo.种子号 == seed)) continue;
-            DatabaseInserter.InsertGalaxiesInfo(databaseSecrets, seed, 64);
-        }
-
-        _stopwatch.Stop();
+        new DatabaseInserter(databaseSecrets).InsertGalaxiesInfoInBatch(startSeed, maxSeed, 64);
     }
 
-    private void DrawProgressBar(int progress, int total)
+    private class TestOutputHelperWriter(ITestOutputHelper output) : TextWriter
     {
-        const int barSize = 50;
-        var percent = (float)progress / total;
+        public override Encoding Encoding => Encoding.UTF8;
 
-        var charsToDraw = (int)(percent * barSize);
-
-        var progressBar = new StringBuilder("[");
-        progressBar.Append('#', charsToDraw);
-        progressBar.Append(' ', barSize - charsToDraw);
-        progressBar.Append(']');
-
-        progressBar.Append($" {percent * 100:F2}%");
-        progressBar.Append($" {progress}/{total}");
-        if (percent > 0)
+        public override void WriteLine(string message)
         {
-            var elapsed = _stopwatch.Elapsed;
-            var estimatedTotalTime = TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / percent);
-            progressBar.Append($" 单个花费时间: {elapsed.TotalMilliseconds / progress}");
-            progressBar.Append($" 总需要时长: {estimatedTotalTime - elapsed}");
+            output.WriteLine(message);
         }
 
-        _testOutputHelper.WriteLine(progressBar.ToString());
+        public override void Write(string message)
+        {
+            output.WriteLine(message);
+        }
     }
 }

@@ -13,7 +13,8 @@ public static class PlanetGen
     public const float kGiantMassCoef = 3.33333f;
     public const float kGiantMass = 0.0199999791f;
     public static float gasCoef = 1f;
-    private static List<int> tmp_theme;
+
+    [ThreadStatic] private static List<int> tmp_theme;
 
     public static PlanetData CreatePlanet(
         GalaxyData galaxy,
