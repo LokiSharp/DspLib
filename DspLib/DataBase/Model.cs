@@ -24,6 +24,10 @@ public class DspDbContext : DbContext
             $"User={_databaseSecrets.User};" +
             $"Password={_databaseSecrets.Password};" +
             $"Port={_databaseSecrets.Port}";
-        optionsBuilder.UseMySql(connectionString, new MariaDbServerVersion(new Version(10, 11, 4)));
+        optionsBuilder.UseMySql(
+            connectionString,
+            new MariaDbServerVersion(new Version(10, 11, 4)),
+            sqlOptions => sqlOptions.EnableRetryOnFailure()
+        );
     }
 }
