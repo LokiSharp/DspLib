@@ -26,9 +26,10 @@ public class DatabaseInserter()
         return typeString;
     }
 
-    public void AddAndSaveChangesInBatch(List<SeedInfo> seeds)
+    public async Task AddAndSaveChangesInBatch(List<SeedInfo> seeds)
     {
-        using var dspDbContext = new DspDbContext(databaseSecrets);
+        await using var dspDbContext = new DspDbContext(databaseSecrets);
+
         foreach (var seed in seeds)
         {
             dspDbContext.SeedGalaxyInfo.AddRange(seed.SeedGalaxyInfos);
@@ -37,7 +38,7 @@ public class DatabaseInserter()
             dspDbContext.SeedInfo.Add(seed);
         }
 
-        dspDbContext.SaveChanges();
+        await dspDbContext.SaveChangesAsync();
     }
 
     public SeedInfo GenerateSeedInfo(int seed, int starCount)
@@ -173,31 +174,63 @@ public class DatabaseInserter()
         return seedInfo;
     }
 
-    public void InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
+    public async Task InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
     {
-        var seedInfos = new ConcurrentBag<SeedInfo>();
+        var seedInfos = new BlockingCollection<SeedInfo>(10000);
         var existingSeeds = new HashSet<int>(new DspDbContext(databaseSecrets).SeedInfo.Select(si => si.种子号));
-        Parallel.For(startSeed, maxSeed, seed =>
+        var addAndSaveChangesInBatchSemaphore = new SemaphoreSlim(10);
+        var throttle = new SemaphoreSlim(100); // limit number of concurrent tasks
+        var tasks = new List<Task>();
+
+        for (var seed = startSeed; seed < maxSeed; seed++)
+        {
+            await throttle.WaitAsync();
+            var takenSeed = seed;
+            tasks.Add(Task.Run(async () =>
+            {
+                try
+                {
+                    await Body(takenSeed);
+                }
+                finally
+                {
+                    throttle.Release();
+                }
+            }));
+        }
+
+        await Task.WhenAll(tasks);
+
+        var remaining = seedInfos.ToList();
+        if (remaining.Count > 0) await AddAndSaveChangesInBatch(remaining);
+        return;
+
+        async Task Body(int seed)
         {
             if (existingSeeds.Contains(seed)) return;
             var seedInfo = GenerateSeedInfo(seed, starCount);
             seedInfos.Add(seedInfo);
 
-            if (seedInfos.Count >= 1000)
+            if (seedInfos.Count < 1000) return;
+            var toSubmit = new List<SeedInfo>();
+            while (seedInfos.TryTake(out var takenSeed))
             {
-                var toSubmit = new List<SeedInfo>();
-                while (seedInfos.TryTake(out var takenSeed))
+                toSubmit.Add(takenSeed);
+                if (toSubmit.Count < 1000) continue;
+                await addAndSaveChangesInBatchSemaphore.WaitAsync();
+                try
                 {
-                    toSubmit.Add(takenSeed);
-                    if (toSubmit.Count >= 1000) break;
+                    await AddAndSaveChangesInBatch(toSubmit);
+                    toSubmit.Clear();
+                }
+                finally
+                {
+                    addAndSaveChangesInBatchSemaphore.Release();
                 }
 
-                AddAndSaveChangesInBatch(toSubmit);
+                break;
             }
-        });
-
-        var remaining = seedInfos.ToList();
-        if (remaining.Count > 0) AddAndSaveChangesInBatch(remaining);
+        }
     }
 
     public Dictionary<EVeinType, int> clacStarVein(StarData starData)

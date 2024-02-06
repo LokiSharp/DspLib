@@ -28,11 +28,11 @@ public class DatabaseInserterTests
     private static DatabaseSecrets databaseSecrets { get; set; }
 
     [Fact]
-    public void TestInsertGalaxiesInfo()
+    public async void TestInsertGalaxiesInfo()
     {
         var startSeed = 0;
         var maxSeed = 99999999;
-        new DatabaseInserter(databaseSecrets).InsertGalaxiesInfoInBatch(startSeed, maxSeed, 64);
+        await new DatabaseInserter(databaseSecrets).InsertGalaxiesInfoInBatch(startSeed, maxSeed, 64);
     }
 
     private class TestOutputHelperWriter(ITestOutputHelper output) : TextWriter
