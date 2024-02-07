@@ -1,5 +1,6 @@
 ﻿namespace DspLib.Enum;
 
+[Flags]
 public enum EPlanetSingularity
 {
     None = 0,

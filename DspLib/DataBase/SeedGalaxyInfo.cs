@@ -31,7 +31,22 @@ public class SeedGalaxyInfo
     [Column(TypeName = "TINYINT(1) UNSIGNED")]
     public int 星球数量 { get; set; }
 
-    public EPlanetType[] 星球类型 { get; set; } = new EPlanetType[6];
+    [NotMapped] public string? 星球类型String { get; set; }
+
+    public EPlanetType[] 星球类型
+    {
+        get
+        {
+            if (星球类型String != null)
+                return 星球类型String.Trim('[', ']')
+                    .Split(',')
+                    .Select(x => (EPlanetType)int.Parse(x))
+                    .ToArray();
+            return [];
+        }
+        set { 星球类型String = "[" + string.Join(",", value.Select(x => (int)x)) + "]"; }
+    }
+
     public bool 是否有水 { get; set; }
     public bool 有硫酸否 { get; set; }
 }
