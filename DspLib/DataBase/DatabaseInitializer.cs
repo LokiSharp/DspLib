@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Text;
+using Dapper;
 using MySqlConnector;
 
 namespace DspLib.DataBase;
@@ -20,15 +21,20 @@ public class DatabaseInitializer
         for (var i = 0; i < numOfTables; i++)
         {
             var createSeedInfoTableQuery = CreateSeedInfoTable(i);
-            var createSeedGalaxyInfosTableQuery = SeedGalaxyInfosTable(i);
+            var createSeedGalaxyInfoTableQuery = SeedGalaxyInfosTable(i);
             var createSeedPlanetsTypeCountInfoTableQuery = SeedPlanetsTypeCountInfoTable(i);
             var createSeedStarsTypeCountInfoTableQuery = SeedStarsTypeCountInfoTable(i);
 
             connection.Execute(createSeedInfoTableQuery);
-            connection.Execute(createSeedGalaxyInfosTableQuery);
+            connection.Execute(createSeedGalaxyInfoTableQuery);
             connection.Execute(createSeedPlanetsTypeCountInfoTableQuery);
             connection.Execute(createSeedStarsTypeCountInfoTableQuery);
         }
+
+        connection.Execute(CreateViewQuery(numOfTables, "SeedInfo"));
+        connection.Execute(CreateViewQuery(numOfTables, "SeedGalaxyInfo"));
+        connection.Execute(CreateViewQuery(numOfTables, "SeedPlanetsTypeCountInfo"));
+        connection.Execute(CreateViewQuery(numOfTables, "SeedStarsTypeCountInfo"));
     }
 
     private string CreateSeedInfoTable(int tableIndex)
@@ -148,5 +154,22 @@ CREATE TABLE SeedStarsTypeCountInfo{tableIndex}
     FOREIGN KEY (SeedInfoId) REFERENCES SeedInfo{tableIndex}(SeedInfoId)
 );";
         return createSeedStarsTypeCountInfoTableQuery;
+    }
+
+    private string CreateViewQuery(int numOfTables, string tableName)
+    {
+        var queryBuilder = new StringBuilder();
+
+        queryBuilder.AppendLine($"CREATE VIEW Combined{tableName} AS ");
+
+        for (var i = 0; i < numOfTables; i++)
+        {
+            if (i != 0)
+                queryBuilder.AppendLine(" UNION ALL ");
+
+            queryBuilder.AppendLine($"SELECT * FROM {tableName}{i}");
+        }
+
+        return queryBuilder.ToString();
     }
 }
