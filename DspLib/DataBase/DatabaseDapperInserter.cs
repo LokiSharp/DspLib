@@ -9,12 +9,12 @@ namespace DspLib.DataBase;
 
 public class DatabaseDapperInserter
 {
-    private readonly string _connectionString = $"Server={Environment.GetEnvironmentVariable("Server")};" +
-                                                $"Database={Environment.GetEnvironmentVariable("Database")};" +
-                                                $"User={Environment.GetEnvironmentVariable("User")};" +
-                                                $"Password={Environment.GetEnvironmentVariable("Password")};" +
-                                                $"Port={Environment.GetEnvironmentVariable("Port")};" +
-                                                $"Allow User Variables=true";
+    private readonly string connectionString = $"Server={Environment.GetEnvironmentVariable("Server")};" +
+                                               $"Database={Environment.GetEnvironmentVariable("Database")};" +
+                                               $"User={Environment.GetEnvironmentVariable("User")};" +
+                                               $"Password={Environment.GetEnvironmentVariable("Password")};" +
+                                               $"Port={Environment.GetEnvironmentVariable("Port")};" +
+                                               $"Allow User Variables=true";
 
     public DatabaseDapperInserter()
     {
@@ -24,31 +24,31 @@ public class DatabaseDapperInserter
 
     private async Task AddAndSaveChangesInBatch(List<SeedInfo> seeds)
     {
-        await using var connection = new MySqlConnection(_connectionString);
+        await using var connection = new MySqlConnection(connectionString);
         connection.Open();
         const string seedInfoInsertQuery = @"
 INSERT INTO SeedInfo 
-(SeedInfoId, 种子号, 巨星数, 最多卫星, 最多潮汐星, 潮汐星球数, 最多潮汐永昼永夜, 潮汐永昼永夜数, 熔岩星球数, 海洋星球数, 沙漠星球数, 冰冻星球数, 气态星球数, 总星球数量, 最高亮度, 星球总亮度) 
+(种子号, 巨星数, 最多卫星, 最多潮汐星, 潮汐星球数, 最多潮汐永昼永夜, 潮汐永昼永夜数, 熔岩星球数, 海洋星球数, 沙漠星球数, 冰冻星球数, 气态星球数, 总星球数量, 最高亮度, 星球总亮度) 
 VALUES
-(@SeedInfoId, @种子号, @巨星数, @最多卫星, @最多潮汐星, @潮汐星球数, @最多潮汐永昼永夜, @潮汐永昼永夜数, @熔岩星球数, @海洋星球数, @沙漠星球数, @冰冻星球数, @气态星球数, @总星球数量, @最高亮度, @星球总亮度);
+(@种子号, @巨星数, @最多卫星, @最多潮汐星, @潮汐星球数, @最多潮汐永昼永夜, @潮汐永昼永夜数, @熔岩星球数, @海洋星球数, @沙漠星球数, @冰冻星球数, @气态星球数, @总星球数量, @最高亮度, @星球总亮度);
 SELECT LAST_INSERT_ID();";
         const string seedGalaxyInfosInsertQuery = @"
 INSERT INTO SeedGalaxyInfo 
-(SeedGalaxyInfoId, SeedInfoId, 恒星类型, 光谱类型, 恒星光度, 星系距离, 环盖首星, 星系坐标x, 星系坐标y, 星系坐标z, 潮汐星数, 最多卫星, 星球数量, 星球类型, 是否有水, 有硫酸否) 
+(SeedInfoId, 恒星类型, 光谱类型, 恒星光度, 星系距离, 环盖首星, 星系坐标x, 星系坐标y, 星系坐标z, 潮汐星数, 最多卫星, 星球数量, 星球类型, 是否有水, 有硫酸否) 
 VALUES 
-(@SeedGalaxyInfoId, @SeedInfoId, @恒星类型, @光谱类型, @恒星光度, @星系距离, @环盖首星, @星系坐标x, @星系坐标y, @星系坐标z, @潮汐星数, @最多卫星, @星球数量, @星球类型String, @是否有水, @有硫酸否);
+( @SeedInfoId, @恒星类型, @光谱类型, @恒星光度, @星系距离, @环盖首星, @星系坐标x, @星系坐标y, @星系坐标z, @潮汐星数, @最多卫星, @星球数量, @星球类型String, @是否有水, @有硫酸否);
 SELECT LAST_INSERT_ID();";
         const string seedPlanetsTypeCountInfoInsertQuery = @"
 INSERT INTO SeedPlanetsTypeCountInfo 
-(SeedPlanetsTypeCountInfoId, SeedInfoId, 地中海, 气态巨星1, 气态巨星2, 冰巨星1, 冰巨星2, 干旱荒漠, 灰烬冻土, 海洋丛林, 熔岩, 冰原冻土, 贫瘠荒漠, 戈壁, 火山灰, 红石, 草原, 水世界, 黑石盐滩, 樱林海, 飓风石林, 猩红冰湖, 气态巨星3, 热带草原, 橙晶荒漠, 极寒冻土, 潘多拉沼泽) 
+(SeedInfoId, 地中海, 气态巨星1, 气态巨星2, 冰巨星1, 冰巨星2, 干旱荒漠, 灰烬冻土, 海洋丛林, 熔岩, 冰原冻土, 贫瘠荒漠, 戈壁, 火山灰, 红石, 草原, 水世界, 黑石盐滩, 樱林海, 飓风石林, 猩红冰湖, 气态巨星3, 热带草原, 橙晶荒漠, 极寒冻土, 潘多拉沼泽) 
 VALUES 
-(@SeedPlanetsTypeCountInfoId, @SeedInfoId, @地中海, @气态巨星1, @气态巨星2, @冰巨星1, @冰巨星2, @干旱荒漠, @灰烬冻土, @海洋丛林, @熔岩, @冰原冻土, @贫瘠荒漠, @戈壁, @火山灰, @红石, @草原, @水世界, @黑石盐滩, @樱林海, @飓风石林, @猩红冰湖, @气态巨星3, @热带草原, @橙晶荒漠, @极寒冻土, @潘多拉沼泽);
+(@SeedInfoId, @地中海, @气态巨星1, @气态巨星2, @冰巨星1, @冰巨星2, @干旱荒漠, @灰烬冻土, @海洋丛林, @熔岩, @冰原冻土, @贫瘠荒漠, @戈壁, @火山灰, @红石, @草原, @水世界, @黑石盐滩, @樱林海, @飓风石林, @猩红冰湖, @气态巨星3, @热带草原, @橙晶荒漠, @极寒冻土, @潘多拉沼泽);
 SELECT LAST_INSERT_ID();";
         const string seedStarsTypeCountInfoInsertQuery = @"
 INSERT INTO SeedStarsTypeCountInfo 
-(SeedStarsTypeCountInfoId, SeedInfoId, M型恒星, K型恒星, G型恒星, F型恒星, A型恒星, B型恒星, O型恒星, X型恒星, M型巨星, K型巨星, G型巨星, F型巨星, A型巨星, B型巨星, O型巨星, X型巨星, 白矮星, 中子星, 黑洞) 
+(SeedInfoId, M型恒星, K型恒星, G型恒星, F型恒星, A型恒星, B型恒星, O型恒星, X型恒星, M型巨星, K型巨星, G型巨星, F型巨星, A型巨星, B型巨星, O型巨星, X型巨星, 白矮星, 中子星, 黑洞) 
 VALUES 
-(@SeedStarsTypeCountInfoId, @SeedInfoId, @M型恒星, @K型恒星, @G型恒星, @F型恒星, @A型恒星, @B型恒星, @O型恒星, @X型恒星, @M型巨星, @K型巨星, @G型巨星, @F型巨星, @A型巨星, @B型巨星, @O型巨星, @X型巨星, @白矮星, @中子星, @黑洞);
+(@SeedInfoId, @M型恒星, @K型恒星, @G型恒星, @F型恒星, @A型恒星, @B型恒星, @O型恒星, @X型恒星, @M型巨星, @K型巨星, @G型巨星, @F型巨星, @A型巨星, @B型巨星, @O型巨星, @X型巨星, @白矮星, @中子星, @黑洞);
 SELECT LAST_INSERT_ID();";
 
         await using var transaction = await connection.BeginTransactionAsync();
@@ -60,7 +60,7 @@ SELECT LAST_INSERT_ID();";
 
             foreach (var seedInfo in seeds)
             {
-                foreach (var seedGalaxyInfo in seedInfo.SeedGalaxyInfos)
+                foreach (var seedGalaxyInfo in seedInfo.SeedGalaxyInfos!)
                 {
                     seedGalaxyInfo.SeedInfoId = seedInfo.SeedInfoId;
                     seedGalaxyInfo.SeedGalaxyInfoId =
@@ -68,11 +68,12 @@ SELECT LAST_INSERT_ID();";
                         .Single();
                 }
 
-                seedInfo.SeedPlanetsTypeCountInfo.SeedInfoId = seedInfo.SeedInfoId;
+                seedInfo.SeedPlanetsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
                 seedInfo.SeedPlanetsTypeCountInfo.SeedPlanetsTypeCountInfoId =
                     (await connection.QueryAsync<int>(seedPlanetsTypeCountInfoInsertQuery,
                         seedInfo.SeedPlanetsTypeCountInfo, transaction)).Single();
-                seedInfo.SeedStarsTypeCountInfo.SeedInfoId = seedInfo.SeedInfoId;
+
+                seedInfo.SeedStarsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
                 seedInfo.SeedStarsTypeCountInfo.SeedStarsTypeCountInfoId =
                     (await connection.QueryAsync<int>(seedStarsTypeCountInfoInsertQuery,
                         seedInfo.SeedStarsTypeCountInfo, transaction)).Single();
@@ -223,7 +224,7 @@ SELECT LAST_INSERT_ID();";
 
     public async Task InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
     {
-        var existingSeeds = new MySqlConnection(_connectionString).Query<int>("SELECT 种子号 FROM SeedInfo").ToHashSet();
+        var existingSeeds = new MySqlConnection(connectionString).Query<int>("SELECT 种子号 FROM SeedInfo").ToHashSet();
         var seedInfos = new BlockingCollection<SeedInfo>(10000);
 
         var addAndSaveChangesInBatchSemaphore = new SemaphoreSlim(20);

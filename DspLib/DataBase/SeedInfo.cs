@@ -1,15 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace DspLib.DataBase;
+﻿namespace DspLib.DataBase;
 
 public class SeedInfo
 {
-    [Column(TypeName = "INT(4) UNSIGNED")] public int SeedInfoId { get; set; }
-    public List<SeedGalaxyInfo> SeedGalaxyInfos { get; set; }
-    public SeedPlanetsTypeCountInfo SeedPlanetsTypeCountInfo { get; set; }
-    public SeedStarsTypeCountInfo SeedStarsTypeCountInfo { get; set; }
-    [Column(TypeName = "INT(4)")] public int 种子号 { get; set; }
-
+    public int SeedInfoId { get; set; }
+    public List<SeedGalaxyInfo>? SeedGalaxyInfos { get; set; }
+    public SeedPlanetsTypeCountInfo? SeedPlanetsTypeCountInfo { get; set; }
+    public SeedStarsTypeCountInfo? SeedStarsTypeCountInfo { get; set; }
+    public int 种子号 { get; set; }
     public int 巨星数 { get; set; }
     public int 最多卫星 { get; set; }
     public int 最多潮汐星 { get; set; }

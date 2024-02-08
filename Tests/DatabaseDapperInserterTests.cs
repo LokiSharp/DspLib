@@ -8,17 +8,15 @@ namespace Tests;
 
 public class DatabaseDapperInserterTests
 {
-    private readonly Stopwatch _stopwatch;
-    private readonly ITestOutputHelper _testOutputHelper;
+    private readonly Stopwatch stopwatch;
+    private readonly ITestOutputHelper testOutputHelper;
 
     public DatabaseDapperInserterTests(ITestOutputHelper testOutputHelper)
     {
-        _stopwatch = new Stopwatch();
-        _testOutputHelper = testOutputHelper;
+        stopwatch = new Stopwatch();
+        this.testOutputHelper = testOutputHelper;
         Console.SetOut(new TestOutputHelperWriter(testOutputHelper));
     }
-
-    private static DatabaseSecrets databaseSecrets { get; set; }
 
     [Fact]
     public async void TestInsertGalaxiesInfo()
@@ -32,12 +30,12 @@ public class DatabaseDapperInserterTests
     {
         public override Encoding Encoding => Encoding.UTF8;
 
-        public override void WriteLine(string message)
+        public override void WriteLine(string? message)
         {
             output.WriteLine(message);
         }
 
-        public override void Write(string message)
+        public override void Write(string? message)
         {
             output.WriteLine(message);
         }

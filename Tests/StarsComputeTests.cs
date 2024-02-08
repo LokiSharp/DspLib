@@ -13,14 +13,14 @@ public class StarsComputeTests(ITestOutputHelper testOutputHelper)
     {
         PlanetModelingManager.Start();
         RandomTable.Init();
-        var beforeDT = DateTime.Now;
+        var beforeDt = DateTime.Now;
         var mSeed = 0;
         var mStarCount = 64;
         var gameDesc = new GameDesc();
         gameDesc.SetForNewGame(mSeed, mStarCount);
-        StarsCompute.Compute(gameDesc, out var galaxyData);
-        var afterDT = DateTime.Now;
-        var ts = afterDT.Subtract(beforeDT);
+        StarsCompute.Compute(gameDesc, out _);
+        var afterDt = DateTime.Now;
+        var ts = afterDt.Subtract(beforeDt);
         testOutputHelper.WriteLine("花费{0}ms", ts.TotalMilliseconds);
     }
 
@@ -29,7 +29,7 @@ public class StarsComputeTests(ITestOutputHelper testOutputHelper)
     {
         PlanetModelingManager.Start();
         RandomTable.Init();
-        var beforeDT = DateTime.Now;
+        var beforeDt = DateTime.Now;
         const int seedCount = 10;
         const int mStarCount = 64;
         var galaxyDatas = new Dictionary<string, GalaxyData>();
@@ -42,8 +42,8 @@ public class StarsComputeTests(ITestOutputHelper testOutputHelper)
             testOutputHelper.WriteLine("计算完成：{0}:{1}", mSeed, mStarCount);
         }
 
-        var afterDT = DateTime.Now;
-        var ts = afterDT.Subtract(beforeDT);
+        var afterDt = DateTime.Now;
+        var ts = afterDt.Subtract(beforeDt);
         testOutputHelper.WriteLine("花费{0}ms", ts.TotalMilliseconds);
         testOutputHelper.WriteLine("平均花费{0}ms", ts.TotalMilliseconds / seedCount);
     }
@@ -53,7 +53,7 @@ public class StarsComputeTests(ITestOutputHelper testOutputHelper)
     {
         PlanetModelingManager.Start();
         RandomTable.Init();
-        var beforeDT = DateTime.Now;
+        var beforeDt = DateTime.Now;
         const int seedCount = 100;
         const int mStarCount = 64;
         var galaxyDatas = new Dictionary<string, GalaxyData>();
@@ -66,8 +66,8 @@ public class StarsComputeTests(ITestOutputHelper testOutputHelper)
             testOutputHelper.WriteLine("计算完成：{0}:{1}", mSeed, mStarCount);
         }
 
-        var afterDT = DateTime.Now;
-        var ts = afterDT.Subtract(beforeDT);
+        var afterDt = DateTime.Now;
+        var ts = afterDt.Subtract(beforeDt);
         testOutputHelper.WriteLine("花费{0}ms", ts.TotalMilliseconds);
         testOutputHelper.WriteLine("平均花费{0}ms", ts.TotalMilliseconds / seedCount);
     }
