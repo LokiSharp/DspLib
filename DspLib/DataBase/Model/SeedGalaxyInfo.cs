@@ -1,6 +1,6 @@
 ﻿using DspLib.Enum;
 
-namespace DspLib.DataBase;
+namespace DspLib.DataBase.Model;
 
 public class SeedGalaxyInfo
 {
@@ -9,7 +9,6 @@ public class SeedGalaxyInfo
     public SeedInfo? SeedInfo { get; set; }
     public EStarType 恒星类型 { get; set; }
     public ESpectrType? 光谱类型 { get; set; }
-
     public float 恒星光度 { get; set; }
     public float 星系距离 { get; set; }
     public bool 环盖首星 { get; set; }
@@ -19,7 +18,6 @@ public class SeedGalaxyInfo
     public int 潮汐星数 { get; set; }
     public int 最多卫星 { get; set; }
     public int 星球数量 { get; set; }
-
     public string? 星球类型String { get; set; }
 
     public EPlanetType[] 星球类型

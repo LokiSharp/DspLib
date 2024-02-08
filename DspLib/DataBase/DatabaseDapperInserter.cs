@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Dapper;
+using DspLib.DataBase.Model;
 using DspLib.Dyson;
 using DspLib.Enum;
 using DspLib.Galaxy;

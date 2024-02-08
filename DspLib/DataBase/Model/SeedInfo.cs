@@ -1,4 +1,4 @@
-﻿namespace DspLib.DataBase;
+﻿namespace DspLib.DataBase.Model;
 
 public class SeedInfo
 {
