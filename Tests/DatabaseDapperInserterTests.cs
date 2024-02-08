@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using DspLib.DataBase;
-using Microsoft.Extensions.Configuration;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,14 +16,8 @@ public class DatabaseDapperInserterTests
         _stopwatch = new Stopwatch();
         _testOutputHelper = testOutputHelper;
         Console.SetOut(new TestOutputHelperWriter(testOutputHelper));
-        var builder = new ConfigurationBuilder()
-            .AddEnvironmentVariables();
-        configuration = builder.Build();
-        databaseSecrets = new DatabaseSecrets();
-        configuration.GetSection("Database").Bind(databaseSecrets);
     }
 
-    private static IConfigurationRoot configuration { get; set; }
     private static DatabaseSecrets databaseSecrets { get; set; }
 
     [Fact]
