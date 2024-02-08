@@ -2,8 +2,8 @@
 
 public class SeedStarsTypeCountInfo
 {
-    public int SeedStarsTypeCountInfoId { get; set; }
-    public int SeedInfoId { get; set; }
+    public ulong SeedStarsTypeCountInfoId { get; set; }
+    public ulong SeedInfoId { get; set; }
     public SeedInfo? SeedInfo { get; set; }
     public int M型恒星 { get; set; }
     public int K型恒星 { get; set; }

@@ -8,7 +8,7 @@ using MySqlConnector;
 
 namespace DspLib.DataBase;
 
-public class DatabaseDapperInserter
+public class DatabaseInserter
 {
     private readonly string connectionString = $"Server={Environment.GetEnvironmentVariable("Server")};" +
                                                $"Database={Environment.GetEnvironmentVariable("Database")};" +
@@ -17,7 +17,7 @@ public class DatabaseDapperInserter
                                                $"Port={Environment.GetEnvironmentVariable("Port")};" +
                                                $"Allow User Variables=true";
 
-    public DatabaseDapperInserter()
+    public DatabaseInserter()
     {
         PlanetModelingManager.Start();
         RandomTable.Init();
@@ -57,7 +57,7 @@ SELECT LAST_INSERT_ID();";
         {
             foreach (var seedInfo in seeds)
                 seedInfo.SeedInfoId =
-                    (await connection.QueryAsync<int>(seedInfoInsertQuery, seedInfo, transaction)).Single();
+                    (await connection.QueryAsync<ulong>(seedInfoInsertQuery, seedInfo, transaction)).Single();
 
             foreach (var seedInfo in seeds)
             {
@@ -65,18 +65,18 @@ SELECT LAST_INSERT_ID();";
                 {
                     seedGalaxyInfo.SeedInfoId = seedInfo.SeedInfoId;
                     seedGalaxyInfo.SeedGalaxyInfoId =
-                        (await connection.QueryAsync<int>(seedGalaxyInfosInsertQuery, seedGalaxyInfo, transaction))
+                        (await connection.QueryAsync<ulong>(seedGalaxyInfosInsertQuery, seedGalaxyInfo, transaction))
                         .Single();
                 }
 
                 seedInfo.SeedPlanetsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
                 seedInfo.SeedPlanetsTypeCountInfo.SeedPlanetsTypeCountInfoId =
-                    (await connection.QueryAsync<int>(seedPlanetsTypeCountInfoInsertQuery,
+                    (await connection.QueryAsync<ulong>(seedPlanetsTypeCountInfoInsertQuery,
                         seedInfo.SeedPlanetsTypeCountInfo, transaction)).Single();
 
                 seedInfo.SeedStarsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
                 seedInfo.SeedStarsTypeCountInfo.SeedStarsTypeCountInfoId =
-                    (await connection.QueryAsync<int>(seedStarsTypeCountInfoInsertQuery,
+                    (await connection.QueryAsync<ulong>(seedStarsTypeCountInfoInsertQuery,
                         seedInfo.SeedStarsTypeCountInfo, transaction)).Single();
             }
 

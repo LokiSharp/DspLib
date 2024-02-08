@@ -2,8 +2,8 @@
 
 public class SeedPlanetsTypeCountInfo
 {
-    public int SeedPlanetsTypeCountInfoId { get; set; }
-    public int SeedInfoId { get; set; }
+    public ulong SeedPlanetsTypeCountInfoId { get; set; }
+    public ulong SeedInfoId { get; set; }
     public SeedInfo? SeedInfo { get; set; }
     public int 地中海 { get; set; }
     public int 气态巨星1 { get; set; }
