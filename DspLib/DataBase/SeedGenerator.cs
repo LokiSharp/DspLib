@@ -59,6 +59,7 @@ public static class SeedGenerator
         };
 
         var seedGalaxyInfos = (from star in galaxyData.stars
+            let resourceCountList = GetMineCount(star)
             select new SeedGalaxyInfo
             {
                 SeedInfo = seedInfo,
@@ -76,7 +77,21 @@ public static class SeedGenerator
                 星球数量 = star.planetCount,
                 星球类型 = star.planets.Select(planet => planet.type).Distinct().ToArray(),
                 是否有水 = star.planets.Any(planet => planet.waterItemId == 1000),
-                有硫酸否 = star.planets.Any(planet => planet.waterItemId == 1116)
+                有硫酸否 = star.planets.Any(planet => planet.waterItemId == 1116),
+                铁矿脉 = resourceCountList[EVeinType.Iron],
+                铜矿脉 = resourceCountList[EVeinType.Copper],
+                硅矿脉 = resourceCountList[EVeinType.Silicium],
+                钛矿脉 = resourceCountList[EVeinType.Titanium],
+                石矿脉 = resourceCountList[EVeinType.Stone],
+                煤矿脉 = resourceCountList[EVeinType.Coal],
+                原油涌泉 = resourceCountList[EVeinType.Oil],
+                可燃冰矿 = resourceCountList[EVeinType.Fireice],
+                金伯利矿 = resourceCountList[EVeinType.Diamond],
+                分形硅矿 = resourceCountList[EVeinType.Fractal],
+                有机晶体矿 = resourceCountList[EVeinType.Crysrub],
+                光栅石矿 = resourceCountList[EVeinType.Grat],
+                刺笋矿脉 = resourceCountList[EVeinType.Bamboo],
+                单极磁矿 = resourceCountList[EVeinType.Mag]
             }).ToList();
 
         var seedStarsTypeCountInfo = new SeedStarsTypeCountInfo
@@ -194,5 +209,29 @@ public static class SeedGenerator
         }
 
         return starTypeCountDictionary;
+    }
+
+    public static Dictionary<EVeinType, int> GetMineCount(StarData star)
+    {
+        var starVeinCountDictionary = System.Enum.GetValues(typeof(EVeinType))
+            .Cast<EVeinType>()
+            .ToDictionary(key => key, value => 0);
+
+        foreach (var planet in star.planets)
+        {
+            var planetData = PlanetModelingManager.RefreshPlanetData(planet);
+            if (planetData == null) continue;
+            var planetVeinCountDictionary = System.Enum.GetValues(typeof(EVeinType))
+                .Cast<EVeinType>()
+                .Zip(planetData, (key, value) => new { key, value })
+                .ToDictionary(pair => pair.key, pair => pair.value);
+
+            foreach (var type in System.Enum.GetValues(typeof(EVeinType))
+                         .Cast<EVeinType>()
+                         .Where(type => type != EVeinType.Max))
+                starVeinCountDictionary[type] += planetVeinCountDictionary[type];
+        }
+
+        return starVeinCountDictionary;
     }
 }

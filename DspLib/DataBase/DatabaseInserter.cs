@@ -77,9 +77,9 @@ VALUES
     {
         var seedGalaxyInfosInsertQuery = $@"
 INSERT INTO ""SeedGalaxyInfo""
-(""SeedGalaxyInfoId"", ""SeedInfoId"", 恒星类型, 光谱类型, 恒星光度, 星系距离, 环盖首星, 星系坐标x, 星系坐标y, 星系坐标z, 潮汐星数, 最多卫星, 星球数量, 星球类型, 是否有水, 有硫酸否) 
+(""SeedGalaxyInfoId"", ""SeedInfoId"", 恒星类型, 光谱类型, 恒星光度, 星系距离, 环盖首星, 星系坐标x, 星系坐标y, 星系坐标z, 潮汐星数, 最多卫星, 星球数量, 星球类型, 是否有水, 有硫酸否, 铁矿脉, 铜矿脉, 硅矿脉, 钛矿脉, 石矿脉, 煤矿脉, 原油涌泉, 可燃冰矿, 金伯利矿, 分形硅矿, 有机晶体矿, 光栅石矿, 刺笋矿脉, 单极磁矿) 
 VALUES 
-(@SeedGalaxyInfoId, @SeedInfoId, @恒星类型, @光谱类型, @恒星光度, @星系距离, @环盖首星, @星系坐标x, @星系坐标y, @星系坐标z, @潮汐星数, @最多卫星, @星球数量, @星球类型String, @是否有水, @有硫酸否);";
+(@SeedGalaxyInfoId, @SeedInfoId, @恒星类型, @光谱类型, @恒星光度, @星系距离, @环盖首星, @星系坐标x, @星系坐标y, @星系坐标z, @潮汐星数, @最多卫星, @星球数量, @星球类型String, @是否有水, @有硫酸否, @铁矿脉, @铜矿脉, @硅矿脉, @钛矿脉, @石矿脉, @煤矿脉, @原油涌泉, @可燃冰矿, @金伯利矿, @分形硅矿, @有机晶体矿, @光栅石矿, @刺笋矿脉, @单极磁矿);";
 
         await connection.QueryAsync(seedGalaxyInfosInsertQuery, seedGalaxyInfo, transaction);
     }
@@ -113,8 +113,8 @@ VALUES
         var existingSeeds = await GetSeedIdFromAllSeedInfoTables(numOfTables);
         var seedInfos = new BlockingCollection<SeedInfo>(10000);
 
-        var addAndSaveChangesInBatchSemaphore = new SemaphoreSlim(40);
-        var throttle = new SemaphoreSlim(1000); // limit number of concurrent tasks
+        var addAndSaveChangesInBatchSemaphore = new SemaphoreSlim(50);
+        var throttle = new SemaphoreSlim(100); // limit number of concurrent tasks
         var tasks = new List<Task>();
         var seeds = new HashSet<int>(Enumerable.Range(startSeed, maxSeed - startSeed + 1));
         seeds.ExceptWith(existingSeeds);
