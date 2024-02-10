@@ -113,7 +113,7 @@ VALUES
         var existingSeeds = await GetSeedIdFromAllSeedInfoTables(numOfTables);
         var seedInfos = new BlockingCollection<SeedInfo>(10000);
 
-        var addAndSaveChangesInBatchSemaphore = new SemaphoreSlim(20);
+        var addAndSaveChangesInBatchSemaphore = new SemaphoreSlim(40);
         var throttle = new SemaphoreSlim(1000); // limit number of concurrent tasks
         var tasks = new List<Task>();
         var seeds = new HashSet<int>(Enumerable.Range(startSeed, maxSeed - startSeed + 1));

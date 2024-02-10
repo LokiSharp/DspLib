@@ -49,13 +49,8 @@ CREATE TABLE ""SeedInfo""
     最高亮度         FLOAT NOT NULL,
     星球总亮度       FLOAT NOT NULL,
     PRIMARY KEY (""SeedInfoId"")
-) PARTITION BY RANGE (""SeedInfoId"");";
+) USING columnar;";
 
-        for (var i = 0; i < numberOfTableShards; i++)
-            createSeedInfoTableQuery += $@"
-CREATE TABLE ""SeedInfo_{i}"" PARTITION OF ""SeedInfo""
-    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
-";
         return createSeedInfoTableQuery;
     }
 
@@ -80,15 +75,9 @@ CREATE TABLE ""SeedGalaxyInfo""
     星球类型           CHAR(16),
     是否有水           BOOLEAN NOT NULL,
     有硫酸否           BOOLEAN NOT NULL,
-    PRIMARY KEY (""SeedGalaxyInfoId"", ""SeedInfoId""),
-    FOREIGN KEY (""SeedInfoId"") REFERENCES ""SeedInfo""(""SeedInfoId"")
-) PARTITION BY RANGE (""SeedInfoId"");";
+    PRIMARY KEY (""SeedGalaxyInfoId"", ""SeedInfoId"")
+) USING columnar;";
 
-        for (var i = 0; i < numberOfTableShards; i++)
-            createSeedGalaxyInfosTableQuery += $@"
-CREATE TABLE ""SeedGalaxyInfo_{i}"" PARTITION OF ""SeedGalaxyInfo""
-    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
-";
         return createSeedGalaxyInfosTableQuery;
     }
 
@@ -123,15 +112,9 @@ CREATE TABLE ""SeedPlanetsTypeCountInfo""
     橙晶荒漠                    SMALLINT NOT NULL,
     极寒冻土                    SMALLINT NOT NULL,
     潘多拉沼泽                  SMALLINT NOT NULL,
-    PRIMARY KEY (""SeedInfoId""),
-    FOREIGN KEY (""SeedInfoId"") REFERENCES ""SeedInfo""(""SeedInfoId"")
-) PARTITION BY RANGE (""SeedInfoId"");";
+    PRIMARY KEY (""SeedInfoId"")
+) USING columnar;";
 
-        for (var i = 0; i < numberOfTableShards; i++)
-            createSeedPlanetsTypeCountInfoTableQuery += $@"
-CREATE TABLE ""SeedPlanetsTypeCountInfo_{i}"" PARTITION OF ""SeedPlanetsTypeCountInfo""
-    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
-";
         return createSeedPlanetsTypeCountInfoTableQuery;
     }
 
@@ -160,15 +143,9 @@ CREATE TABLE ""SeedStarsTypeCountInfo""
     白矮星                    SMALLINT NOT NULL,
     中子星                    SMALLINT NOT NULL,
     黑洞                      SMALLINT NOT NULL,
-    PRIMARY KEY (""SeedInfoId""),
-    FOREIGN KEY (""SeedInfoId"") REFERENCES ""SeedInfo""(""SeedInfoId"")
-) PARTITION BY RANGE (""SeedInfoId"");";
+    PRIMARY KEY (""SeedInfoId"")
+) USING columnar;";
 
-        for (var i = 0; i < numberOfTableShards; i++)
-            createSeedStarsTypeCountInfoTableQuery += $@"
-CREATE TABLE ""SeedStarsTypeCountInfo_{i}"" PARTITION OF ""SeedStarsTypeCountInfo""
-    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
-";
         return createSeedStarsTypeCountInfoTableQuery;
     }
 }
