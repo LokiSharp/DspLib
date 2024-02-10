@@ -4,8 +4,8 @@ namespace DspLib.DataBase.Model;
 
 public class SeedGalaxyInfo
 {
-    public ulong SeedGalaxyInfoId { get; set; }
-    public ulong SeedInfoId { get; set; }
+    public long SeedGalaxyInfoId { get; set; }
+    public long SeedInfoId { get; set; }
     public SeedInfo? SeedInfo { get; set; }
     public EStarType 恒星类型 { get; set; }
     public ESpectrType? 光谱类型 { get; set; }

@@ -1,175 +1,174 @@
-﻿using System.Text;
-using Dapper;
-using MySqlConnector;
+﻿using Dapper;
+using Npgsql;
 
 namespace DspLib.DataBase;
 
 public class DatabaseInitializer
 {
-    private readonly string connectionString = $"Server={Environment.GetEnvironmentVariable("Server")};" +
-                                               $"Database={Environment.GetEnvironmentVariable("Database")};" +
-                                               $"User={Environment.GetEnvironmentVariable("User")};" +
-                                               $"Password={Environment.GetEnvironmentVariable("Password")};" +
-                                               $"Port={Environment.GetEnvironmentVariable("Port")};" +
-                                               $"Allow User Variables=true";
+    private readonly string _connectionString = $"Host={Environment.GetEnvironmentVariable("Host")};" +
+                                                $"Database={Environment.GetEnvironmentVariable("Database")};" +
+                                                $"Username={Environment.GetEnvironmentVariable("Username")};" +
+                                                $"Password={Environment.GetEnvironmentVariable("Password")};";
 
-    public void CreateTable(int numOfTables)
+    public void CreateTable(int numberOfTableShards)
     {
-        using var connection = new MySqlConnection(connectionString);
+        using var connection = new NpgsqlConnection(_connectionString);
         connection.Open();
 
-        for (var i = 0; i < numOfTables; i++)
-        {
-            var createSeedInfoTableQuery = CreateSeedInfoTable(i);
-            var createSeedGalaxyInfoTableQuery = SeedGalaxyInfosTable(i);
-            var createSeedPlanetsTypeCountInfoTableQuery = SeedPlanetsTypeCountInfoTable(i);
-            var createSeedStarsTypeCountInfoTableQuery = SeedStarsTypeCountInfoTable(i);
 
-            connection.Execute(createSeedInfoTableQuery);
-            connection.Execute(createSeedGalaxyInfoTableQuery);
-            connection.Execute(createSeedPlanetsTypeCountInfoTableQuery);
-            connection.Execute(createSeedStarsTypeCountInfoTableQuery);
-        }
+        var createSeedInfoTableQuery = CreateSeedInfoTable(numberOfTableShards);
+        var createSeedGalaxyInfoTableQuery = SeedGalaxyInfosTable(numberOfTableShards);
+        var createSeedPlanetsTypeCountInfoTableQuery = SeedPlanetsTypeCountInfoTable(numberOfTableShards);
+        var createSeedStarsTypeCountInfoTableQuery = SeedStarsTypeCountInfoTable(numberOfTableShards);
 
-        connection.Execute(CreateViewQuery(numOfTables, "SeedInfo"));
-        connection.Execute(CreateViewQuery(numOfTables, "SeedGalaxyInfo"));
-        connection.Execute(CreateViewQuery(numOfTables, "SeedPlanetsTypeCountInfo"));
-        connection.Execute(CreateViewQuery(numOfTables, "SeedStarsTypeCountInfo"));
+        connection.Execute(createSeedInfoTableQuery);
+        connection.Execute(createSeedGalaxyInfoTableQuery);
+        connection.Execute(createSeedPlanetsTypeCountInfoTableQuery);
+        connection.Execute(createSeedStarsTypeCountInfoTableQuery);
     }
 
-    private string CreateSeedInfoTable(int tableIndex)
+    private string CreateSeedInfoTable(int numberOfTableShards)
     {
         var createSeedInfoTableQuery = $@"
-        CREATE TABLE SeedInfo{tableIndex}
-        (
-            SeedInfoId       BIGINT UNSIGNED NOT NULL PRIMARY KEY,
-            种子号           INT UNSIGNED NOT NULL,
-            巨星数           INT UNSIGNED NOT NULL,
-            最多卫星         INT UNSIGNED NOT NULL,
-            最多潮汐星       INT UNSIGNED NOT NULL,
-            潮汐星球数       INT UNSIGNED NOT NULL,
-            最多潮汐永昼永夜 INT UNSIGNED NOT NULL,
-            潮汐永昼永夜数   INT UNSIGNED NOT NULL,
-            熔岩星球数       INT UNSIGNED NOT NULL,
-            海洋星球数       INT UNSIGNED NOT NULL,
-            沙漠星球数       INT UNSIGNED NOT NULL,
-            冰冻星球数       INT UNSIGNED NOT NULL,
-            气态星球数       INT UNSIGNED NOT NULL,
-            总星球数量       INT UNSIGNED NOT NULL,
-            最高亮度         FLOAT NOT NULL,
-            星球总亮度       FLOAT NOT NULL
-        );";
+CREATE TABLE ""SeedInfo""
+(
+    ""SeedInfoId""       INT NOT NULL,
+    种子号           INT NOT NULL,
+    巨星数           INT NOT NULL,
+    最多卫星         INT NOT NULL,
+    最多潮汐星       INT NOT NULL,
+    潮汐星球数       INT NOT NULL,
+    最多潮汐永昼永夜 INT NOT NULL,
+    潮汐永昼永夜数   INT NOT NULL,
+    熔岩星球数       INT NOT NULL,
+    海洋星球数       INT NOT NULL,
+    沙漠星球数       INT NOT NULL,
+    冰冻星球数       INT NOT NULL,
+    气态星球数       INT NOT NULL,
+    总星球数量       INT NOT NULL,
+    最高亮度         FLOAT NOT NULL,
+    星球总亮度       FLOAT NOT NULL,
+    PRIMARY KEY (""SeedInfoId"")
+) PARTITION BY RANGE (""SeedInfoId"");";
+
+        for (var i = 0; i < numberOfTableShards; i++)
+            createSeedInfoTableQuery += $@"
+CREATE TABLE ""SeedInfo_{i}"" PARTITION OF ""SeedInfo""
+    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
+";
         return createSeedInfoTableQuery;
     }
 
-    private string SeedGalaxyInfosTable(int tableIndex)
+    private string SeedGalaxyInfosTable(int numberOfTableShards)
     {
         var createSeedGalaxyInfosTableQuery = $@"
-CREATE TABLE SeedGalaxyInfo{tableIndex}
+CREATE TABLE ""SeedGalaxyInfo""
 (
-    SeedGalaxyInfoId   BIGINT UNSIGNED NOT NULL PRIMARY KEY,
-    SeedInfoId         BIGINT UNSIGNED NOT NULL,
-    恒星类型           TINYINT UNSIGNED NOT NULL,
-    光谱类型           TINYINT UNSIGNED NOT NULL,
+    ""SeedGalaxyInfoId""   BIGINT NOT NULL,
+    ""SeedInfoId""         INT NOT NULL,
+    恒星类型           SMALLINT NOT NULL,
+    光谱类型           SMALLINT NOT NULL,
     恒星光度           FLOAT NOT NULL,
     星系距离           FLOAT NOT NULL,
     环盖首星           BOOLEAN NOT NULL,
     星系坐标x          FLOAT NOT NULL,
     星系坐标y          FLOAT NOT NULL,
     星系坐标z          FLOAT NOT NULL,
-    潮汐星数           TINYINT UNSIGNED NOT NULL,
-    最多卫星           TINYINT UNSIGNED NOT NULL,
-    星球数量           TINYINT UNSIGNED NOT NULL,
-    星球类型           CHAR(16) CHARACTER SET ascii,
+    潮汐星数           SMALLINT NOT NULL,
+    最多卫星           SMALLINT NOT NULL,
+    星球数量           SMALLINT NOT NULL,
+    星球类型           CHAR(16),
     是否有水           BOOLEAN NOT NULL,
     有硫酸否           BOOLEAN NOT NULL,
-    FOREIGN KEY (SeedInfoId) REFERENCES SeedInfo{tableIndex}(SeedInfoId)
-);";
+    PRIMARY KEY (""SeedGalaxyInfoId"", ""SeedInfoId""),
+    FOREIGN KEY (""SeedInfoId"") REFERENCES ""SeedInfo""(""SeedInfoId"")
+) PARTITION BY RANGE (""SeedInfoId"");";
+
+        for (var i = 0; i < numberOfTableShards; i++)
+            createSeedGalaxyInfosTableQuery += $@"
+CREATE TABLE ""SeedGalaxyInfo_{i}"" PARTITION OF ""SeedGalaxyInfo""
+    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
+";
         return createSeedGalaxyInfosTableQuery;
     }
 
-    private string SeedPlanetsTypeCountInfoTable(int tableIndex)
+    private string SeedPlanetsTypeCountInfoTable(int numberOfTableShards)
     {
         var createSeedPlanetsTypeCountInfoTableQuery = $@"
-CREATE TABLE SeedPlanetsTypeCountInfo{tableIndex}
+CREATE TABLE ""SeedPlanetsTypeCountInfo""
 (
-    SeedPlanetsTypeCountInfoId  BIGINT UNSIGNED NOT NULL PRIMARY KEY,
-    SeedInfoId                  BIGINT UNSIGNED NOT NULL,
-    地中海                      TINYINT UNSIGNED NOT NULL,
-    气态巨星1                   TINYINT UNSIGNED NOT NULL,
-    气态巨星2                   TINYINT UNSIGNED NOT NULL,
-    冰巨星1                     TINYINT UNSIGNED NOT NULL,
-    冰巨星2                     TINYINT UNSIGNED NOT NULL,
-    干旱荒漠                    TINYINT UNSIGNED NOT NULL,
-    灰烬冻土                    TINYINT UNSIGNED NOT NULL,
-    海洋丛林                    TINYINT UNSIGNED NOT NULL,
-    熔岩                        TINYINT UNSIGNED NOT NULL,
-    冰原冻土                    TINYINT UNSIGNED NOT NULL,
-    贫瘠荒漠                    TINYINT UNSIGNED NOT NULL,
-    戈壁                        TINYINT UNSIGNED NOT NULL,
-    火山灰                      TINYINT UNSIGNED NOT NULL,
-    红石                        TINYINT UNSIGNED NOT NULL,
-    草原                        TINYINT UNSIGNED NOT NULL,
-    水世界                      TINYINT UNSIGNED NOT NULL,
-    黑石盐滩                    TINYINT UNSIGNED NOT NULL,
-    樱林海                      TINYINT UNSIGNED NOT NULL,
-    飓风石林                    TINYINT UNSIGNED NOT NULL,
-    猩红冰湖                    TINYINT UNSIGNED NOT NULL,
-    气态巨星3                   TINYINT UNSIGNED NOT NULL,
-    热带草原                    TINYINT UNSIGNED NOT NULL,
-    橙晶荒漠                    TINYINT UNSIGNED NOT NULL,
-    极寒冻土                    TINYINT UNSIGNED NOT NULL,
-    潘多拉沼泽                  TINYINT UNSIGNED NOT NULL,
-    FOREIGN KEY (SeedInfoId) REFERENCES SeedInfo{tableIndex}(SeedInfoId)
-);";
+    ""SeedInfoId""                  INT NOT NULL,
+    地中海                      SMALLINT NOT NULL,
+    气态巨星1                   SMALLINT NOT NULL,
+    气态巨星2                   SMALLINT NOT NULL,
+    冰巨星1                     SMALLINT NOT NULL,
+    冰巨星2                     SMALLINT NOT NULL,
+    干旱荒漠                    SMALLINT NOT NULL,
+    灰烬冻土                    SMALLINT NOT NULL,
+    海洋丛林                    SMALLINT NOT NULL,
+    熔岩                        SMALLINT NOT NULL,
+    冰原冻土                    SMALLINT NOT NULL,
+    贫瘠荒漠                    SMALLINT NOT NULL,
+    戈壁                        SMALLINT NOT NULL,
+    火山灰                      SMALLINT NOT NULL,
+    红石                        SMALLINT NOT NULL,
+    草原                        SMALLINT NOT NULL,
+    水世界                      SMALLINT NOT NULL,
+    黑石盐滩                    SMALLINT NOT NULL,
+    樱林海                      SMALLINT NOT NULL,
+    飓风石林                    SMALLINT NOT NULL,
+    猩红冰湖                    SMALLINT NOT NULL,
+    气态巨星3                   SMALLINT NOT NULL,
+    热带草原                    SMALLINT NOT NULL,
+    橙晶荒漠                    SMALLINT NOT NULL,
+    极寒冻土                    SMALLINT NOT NULL,
+    潘多拉沼泽                  SMALLINT NOT NULL,
+    PRIMARY KEY (""SeedInfoId""),
+    FOREIGN KEY (""SeedInfoId"") REFERENCES ""SeedInfo""(""SeedInfoId"")
+) PARTITION BY RANGE (""SeedInfoId"");";
+
+        for (var i = 0; i < numberOfTableShards; i++)
+            createSeedPlanetsTypeCountInfoTableQuery += $@"
+CREATE TABLE ""SeedPlanetsTypeCountInfo_{i}"" PARTITION OF ""SeedPlanetsTypeCountInfo""
+    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
+";
         return createSeedPlanetsTypeCountInfoTableQuery;
     }
 
-    private string SeedStarsTypeCountInfoTable(int tableIndex)
+    private string SeedStarsTypeCountInfoTable(int numberOfTableShards)
     {
         var createSeedStarsTypeCountInfoTableQuery = $@"
-CREATE TABLE SeedStarsTypeCountInfo{tableIndex}
+CREATE TABLE ""SeedStarsTypeCountInfo""
 (
-    SeedStarsTypeCountInfoId  BIGINT UNSIGNED NOT NULL PRIMARY KEY,
-    SeedInfoId                BIGINT UNSIGNED NOT NULL,
-    M型恒星                   TINYINT UNSIGNED NOT NULL,
-    K型恒星                   TINYINT UNSIGNED NOT NULL,
-    G型恒星                   TINYINT UNSIGNED NOT NULL,
-    F型恒星                   TINYINT UNSIGNED NOT NULL,
-    A型恒星                   TINYINT UNSIGNED NOT NULL,
-    B型恒星                   TINYINT UNSIGNED NOT NULL,
-    O型恒星                   TINYINT UNSIGNED NOT NULL,
-    X型恒星                   TINYINT UNSIGNED NOT NULL,
-    M型巨星                   TINYINT UNSIGNED NOT NULL,
-    K型巨星                   TINYINT UNSIGNED NOT NULL,
-    G型巨星                   TINYINT UNSIGNED NOT NULL,
-    F型巨星                   TINYINT UNSIGNED NOT NULL,
-    A型巨星                   TINYINT UNSIGNED NOT NULL,
-    B型巨星                   TINYINT UNSIGNED NOT NULL,
-    O型巨星                   TINYINT UNSIGNED NOT NULL,
-    X型巨星                   TINYINT UNSIGNED NOT NULL,
-    白矮星                    TINYINT UNSIGNED NOT NULL,
-    中子星                    TINYINT UNSIGNED NOT NULL,
-    黑洞                      TINYINT UNSIGNED NOT NULL,
-    FOREIGN KEY (SeedInfoId) REFERENCES SeedInfo{tableIndex}(SeedInfoId)
-);";
+    ""SeedInfoId""                INT NOT NULL,
+    M型恒星                   SMALLINT NOT NULL,
+    K型恒星                   SMALLINT NOT NULL,
+    G型恒星                   SMALLINT NOT NULL,
+    F型恒星                   SMALLINT NOT NULL,
+    A型恒星                   SMALLINT NOT NULL,
+    B型恒星                   SMALLINT NOT NULL,
+    O型恒星                   SMALLINT NOT NULL,
+    X型恒星                   SMALLINT NOT NULL,
+    M型巨星                   SMALLINT NOT NULL,
+    K型巨星                   SMALLINT NOT NULL,
+    G型巨星                   SMALLINT NOT NULL,
+    F型巨星                   SMALLINT NOT NULL,
+    A型巨星                   SMALLINT NOT NULL,
+    B型巨星                   SMALLINT NOT NULL,
+    O型巨星                   SMALLINT NOT NULL,
+    X型巨星                   SMALLINT NOT NULL,
+    白矮星                    SMALLINT NOT NULL,
+    中子星                    SMALLINT NOT NULL,
+    黑洞                      SMALLINT NOT NULL,
+    PRIMARY KEY (""SeedInfoId""),
+    FOREIGN KEY (""SeedInfoId"") REFERENCES ""SeedInfo""(""SeedInfoId"")
+) PARTITION BY RANGE (""SeedInfoId"");";
+
+        for (var i = 0; i < numberOfTableShards; i++)
+            createSeedStarsTypeCountInfoTableQuery += $@"
+CREATE TABLE ""SeedStarsTypeCountInfo_{i}"" PARTITION OF ""SeedStarsTypeCountInfo""
+    FOR VALUES FROM ({100000000 / numberOfTableShards * i}) TO ({100000000 / numberOfTableShards * (i + 1) - 1});
+";
         return createSeedStarsTypeCountInfoTableQuery;
-    }
-
-    private string CreateViewQuery(int numOfTables, string tableName)
-    {
-        var queryBuilder = new StringBuilder();
-
-        queryBuilder.AppendLine($"CREATE VIEW Combined{tableName} AS ");
-
-        for (var i = 0; i < numOfTables; i++)
-        {
-            if (i != 0)
-                queryBuilder.AppendLine(" UNION ALL ");
-
-            queryBuilder.AppendLine($"SELECT * FROM {tableName}{i}");
-        }
-
-        return queryBuilder.ToString();
     }
 }
