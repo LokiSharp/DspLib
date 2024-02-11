@@ -4,7 +4,7 @@ using DspLib.Galaxy;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Tests;
+namespace Tests.Compute;
 
 public class PlanetComputeTests(ITestOutputHelper testOutputHelper)
 {

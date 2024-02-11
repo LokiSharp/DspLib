@@ -1,8 +1,9 @@
 ﻿using DspLib.DataBase;
+using Tests.Utils;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Tests;
+namespace Tests.Database;
 
 public class DatabaseInitializerTests
 {

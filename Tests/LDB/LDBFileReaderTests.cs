@@ -1,7 +1,7 @@
 ﻿using DspLib;
 using Xunit;
 
-namespace Tests;
+namespace Tests.LDB;
 
 public class LDBFileReaderTests
 {

@@ -1,36 +1,35 @@
-﻿using DspLib;
-using Xunit;
+﻿using Xunit;
 using Xunit.Abstractions;
 
-namespace Tests;
+namespace Tests.LDB;
 
 public class LDBTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
     public void TestReadItemTest()
     {
-        var result = LDB.items;
+        var result = DspLib.LDB.items;
         testOutputHelper.WriteLine(result.dataArray.Length.ToString());
     }
 
     [Fact]
     public void TestReadTheme()
     {
-        var result = LDB.themes;
+        var result = DspLib.LDB.themes;
         testOutputHelper.WriteLine(result.dataArray.Length.ToString());
     }
 
     [Fact]
     public void TestReadVein()
     {
-        var result = LDB.veins;
+        var result = DspLib.LDB.veins;
         testOutputHelper.WriteLine(result.dataArray.Length.ToString());
     }
 
     [Fact]
     public void TestReadRecipe()
     {
-        var result = LDB.recipes;
+        var result = DspLib.LDB.recipes;
         testOutputHelper.WriteLine(result.dataArray.Length.ToString());
     }
 }

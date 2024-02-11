@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Xunit.Abstractions;
 
-namespace Tests;
+namespace Tests.Utils;
 
 public class TestOutputHelperWriter(ITestOutputHelper output) : TextWriter
 {
