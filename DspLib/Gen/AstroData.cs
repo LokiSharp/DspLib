@@ -1,6 +1,8 @@
 ﻿using DspLib.Algorithms;
 using DspLib.Enum;
 
+namespace DspLib.Gen;
+
 public struct AstroData
 {
     public int id;

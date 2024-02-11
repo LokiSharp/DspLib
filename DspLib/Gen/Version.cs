@@ -1,4 +1,4 @@
-﻿namespace DspLib.Galaxy;
+﻿namespace DspLib.Gen;
 
 [Serializable]
 public struct Version

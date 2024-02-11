@@ -1,6 +1,6 @@
 ﻿using DspLib.Algorithms;
 using DspLib.Enum;
-using DspLib.Galaxy;
+using DspLib.Gen;
 
 public static class StarGen
 {

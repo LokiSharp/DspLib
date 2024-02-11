@@ -1,7 +1,7 @@
 ﻿using DspLib;
 using DspLib.Algorithms;
 using DspLib.Enum;
-using DspLib.Galaxy;
+using DspLib.Gen;
 
 public class PlanetAlgorithm11 : PlanetAlgorithm
 {

@@ -2,7 +2,7 @@
 using DspLib.Enum;
 using DspLib.Protos;
 
-namespace DspLib.Galaxy;
+namespace DspLib.Gen;
 
 public static class PlanetGen
 {

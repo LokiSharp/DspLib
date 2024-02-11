@@ -1,4 +1,4 @@
-﻿namespace DspLib.Galaxy;
+﻿namespace DspLib.Gen;
 
 public class GameDesc
 {

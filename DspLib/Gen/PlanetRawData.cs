@@ -1,6 +1,6 @@
 ﻿using DspLib.Algorithms;
 
-namespace DspLib.Galaxy;
+namespace DspLib.Gen;
 
 public class PlanetRawData
 {

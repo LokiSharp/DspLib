@@ -1,6 +1,6 @@
 ﻿using DspLib;
 using DspLib.Enum;
-using DspLib.Galaxy;
+using DspLib.Gen;
 using DspLib.Protos;
 
 public static class PlanetModelingManager

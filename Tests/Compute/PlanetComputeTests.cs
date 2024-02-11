@@ -1,6 +1,6 @@
 ﻿using DspLib;
 using DspLib.Dyson;
-using DspLib.Galaxy;
+using DspLib.Gen;
 using Xunit;
 using Xunit.Abstractions;
 

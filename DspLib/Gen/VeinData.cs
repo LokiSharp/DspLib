@@ -1,7 +1,7 @@
 ﻿using DspLib.Algorithms;
 using DspLib.Enum;
 
-namespace DspLib.Galaxy;
+namespace DspLib.Gen;
 
 public struct VeinData
 {

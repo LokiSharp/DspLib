@@ -1,5 +1,7 @@
 ﻿using DspLib.Algorithms;
 
+namespace DspLib.Gen;
+
 public class AstroOrbitData
 {
     public double orbitalPeriod = 3600.0;

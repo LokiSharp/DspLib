@@ -1,4 +1,4 @@
-﻿using DspLib.Galaxy;
+﻿using DspLib.Gen;
 
 namespace DspLib;
 

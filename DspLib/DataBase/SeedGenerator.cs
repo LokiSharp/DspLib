@@ -1,6 +1,6 @@
 ﻿using DspLib.DataBase.Model;
 using DspLib.Enum;
-using DspLib.Galaxy;
+using DspLib.Gen;
 
 namespace DspLib.DataBase;
 
