@@ -28,11 +28,11 @@ public static class StarsCompute
 
     public static void PlanetCompute(GalaxyData galaxyData, StarData star, PlanetData planetData)
     {
-        var planetAlgorithm = PlanetModelingManager.Algorithm(planetData);
+        // var planetAlgorithm = PlanetModelingManager.Algorithm(planetData);
         planetData.data = new PlanetRawData(planetData.precision);
         planetData.data.CalcVerts();
-        planetAlgorithm.GenerateTerrain(planetData.mod_x, planetData.mod_y);
-        planetAlgorithm.planet.star = star;
-        planetAlgorithm.planet.galaxy = galaxyData;
+        // planetAlgorithm.GenerateTerrain(planetData.mod_x, planetData.mod_y);
+        // planetAlgorithm.planet.star = star;
+        // planetAlgorithm.planet.galaxy = galaxyData;
     }
 }
