@@ -16,6 +16,20 @@ public static class PlanetGen
 
     [ThreadStatic] private static List<int> tmp_theme;
 
+    /// <summary>
+    ///     创建一个新的行星
+    /// </summary>
+    /// <param name="galaxy">所属的银河系</param>
+    /// <param name="star">所属的天体</param>
+    /// <param name="themeIds">主题 ID 组</param>
+    /// <param name="index">行星所在的位置索引</param>
+    /// <param name="orbitAround">行星卫星数量</param>
+    /// <param name="orbitIndex">行星卫星索引</param>
+    /// <param name="number">行星编号</param>
+    /// <param name="gasGiant">如果是气态巨星则为 true ，否则为 false </param>
+    /// <param name="info_seed">用于生成行星信息的种子</param>
+    /// <param name="gen_seed">用于生成行星实例的种子</param>
+    /// <returns>创建的 PlanetData 对象</returns>
     public static PlanetData CreatePlanet(
         GalaxyData galaxy,
         StarData star,
@@ -28,6 +42,8 @@ public static class PlanetGen
         int info_seed,
         int gen_seed)
     {
+        #region 创建新的 PlanetData 对象象，并设置初始属性，索引编号、标识编号、所在银河系、所在星系、种子、卫星信息、名称
+
         var planet = new PlanetData();
         var dotNet35Random = new DotNet35Random(info_seed);
         planet.index = index;
@@ -55,6 +71,11 @@ public static class PlanetGen
 
         var str = star.planetCount > 20 ? (index + 1).ToString() : NameGen.roman[index + 1];
         planet.name = star.name + " " + str + "号星";
+
+        #endregion
+
+        #region 生成用于计算的随机数
+
         var num3 = dotNet35Random.NextDouble();
         var num4 = dotNet35Random.NextDouble();
         var num5 = dotNet35Random.NextDouble();
@@ -87,6 +108,10 @@ public static class PlanetGen
                           planet.orbitAroundPlanet.realRadius) / 40000.0);
         }
 
+        #endregion
+
+        #region 设置轨道信息，轨道半径、轨道倾角、轨道经度、轨道公转周期、轨道相位、与主星的距离、行星尺寸
+
         planet.orbitRadius = f1;
         planet.orbitInclination = (float)(num5 * 16.0 - 8.0);
         if (orbitAround > 0)
@@ -104,6 +129,11 @@ public static class PlanetGen
             ? Math.Sqrt(39.478417604357432 * f1 * f1 * f1 / 1.0830842106853677E-08)
             : Math.Sqrt(39.478417604357432 * f1 * f1 * f1 / (1.3538551990520382E-06 * star.mass));
         planet.orbitPhase = (float)(num7 * 360.0);
+
+        #endregion
+
+        #region 设置倾角、行星特性、自转周期、运行时轨道旋转、可居住半径、行星类型、行星半径、行星精度、行星分片、行星照度
+
         if (num15 < 0.039999999105930328)
         {
             planet.obliquity = (float)(num8 * (num9 - 0.5) * 39.9);
@@ -251,7 +281,13 @@ public static class PlanetGen
         }
 
         planet.luminosity = Mathf.Round(planet.luminosity * 100f) / 100f;
+
+        #endregion
+
         SetPlanetTheme(planet, themeIds, rand1, rand2, rand3, rand4, theme_seed);
+
+        #region 创建一个新的天体数据，并将其加入到星系数据中
+
         var astrosData = new AstroData
         {
             id = planet.id,
@@ -260,9 +296,29 @@ public static class PlanetGen
             uRadius = planet.realRadius
         };
         star.galaxy.astrosData[planet.id] = astrosData;
+
+        #endregion
+
         return planet;
     }
 
+    /// <summary>
+    ///     设置行星的主题。
+    /// </summary>
+    /// <param name="planet">需要设置主题的 PlanetData 对象。</param>
+    /// <param name="themeIds">主题的id数组。如果传入 null，则使用 ThemeProto.themeIds。</param>
+    /// <param name="rand1">生成主题 id 的随机数。</param>
+    /// <param name="rand2">生成算法 id 的随机数。</param>
+    /// <param name="rand3">用于生成 mod_x 的随机数。</param>
+    /// <param name="rand4">用于生成 mod_y 的随机数。</param>
+    /// <param name="theme_seed">用于生成风格的种子。</param>
+    /// <remarks>
+    ///     这个方法依据主题列表（themeIds参数）中的主题对行星主题进行设置。如果主题列表为空，将会使用默认的主题列表。
+    ///     为了确定行星主题，该方法首先根据行星的类型、温度偏差和主题的分布评估每个主题的适用性。适用的主题被添加到临时列表中。
+    ///     如果没有合适的主题，该方法将会尝试使用沙漠类型的主题。如果仍然没有合适的主题，将会选择沙漠类型的主题，而不管它们是否已经被使用。
+    ///     确定主题之后，使用传入的随机数选取一个主题，并设置行星的主题相关的属性。
+    ///     如果行星是气态的，那么还会根据主题设置气态行星的资源。
+    /// </remarks>
     public static void SetPlanetTheme(
         PlanetData planet,
         int[] themeIds,

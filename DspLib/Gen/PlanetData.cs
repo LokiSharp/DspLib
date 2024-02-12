@@ -19,15 +19,15 @@ public class PlanetData
     public int factingCompletedStage = -1;
     public bool factoryLoaded;
     public bool factoryLoading;
-    public GalaxyData galaxy;
+    public GalaxyData galaxy; // 所在银河系对象
     public float[] gasHeatValues;
     public int[] gasItems;
     public float[] gasSpeeds;
     public double gasTotalHeat;
-    public float habitableBias;
+    public float habitableBias; // 可居住半径
     public int iceFlag;
-    public int id;
-    public int index;
+    public int id; // 标识编号
+    public int index; // 索引编号
     public int infoSeed;
     public float ionHeight;
     public float landPercent;
@@ -35,25 +35,25 @@ public class PlanetData
     public bool levelized;
     public bool loaded;
     public bool loading;
-    public float luminosity;
+    public float luminosity; // 行星照度
     public double mod_x;
     public double mod_y;
     public byte[] modData;
     public string name = "";
     public int number;
-    public float obliquity;
-    public double orbitalPeriod = 3600.0;
-    public int orbitAround;
-    public PlanetData orbitAroundPlanet;
-    public float orbitInclination;
-    public int orbitIndex;
-    public float orbitLongitude;
-    public float orbitPhase;
-    public float orbitRadius = 1f;
+    public float obliquity; // 倾角
+    public double orbitalPeriod = 3600.0; // 轨道公转周期
+    public int orbitAround; // 行星轨道卫星数量
+    public PlanetData orbitAroundPlanet; // 行星卫星对象
+    public float orbitInclination; // 轨道倾角
+    public int orbitIndex; // 轨道索引
+    public float orbitLongitude; // 轨道经度
+    public float orbitPhase; // 轨道相位
+    public float orbitRadius = 1f; // 轨道半径
     public string overrideName = "";
-    public int precision = 160;
-    public float radius = 200f;
-    public double rotationPeriod = 480.0;
+    public int precision = 160; // 行星精度
+    public float radius = 200f; // 半径
+    public double rotationPeriod = 480.0; // 自转周期
     public float rotationPhase;
     public Vector3 runtimeLocalSunDirection;
     public float runtimeOrbitPhase;
@@ -63,17 +63,17 @@ public class PlanetData
     public Quaternion runtimeRotation;
     public Quaternion runtimeRotationNext;
     public float runtimeRotationPhase;
-    public Quaternion runtimeSystemRotation;
-    public float scale = 1f;
-    public int seed;
-    public int segment = 5;
-    public EPlanetSingularity singularity;
-    public StarData star;
+    public Quaternion runtimeSystemRotation; // 运行时轨道旋转
+    public float scale = 1f; // 行星尺寸
+    public int seed; // 种子
+    public int segment = 5; // 行星分片
+    public EPlanetSingularity singularity; // 行星特性
+    public StarData star; // 所在星系对象
     public int style;
-    public float sunDistance;
-    public float temperatureBias;
+    public float sunDistance; // 与主星的距离
+    public float temperatureBias; // 温差
     public int theme;
-    public EPlanetType type;
+    public EPlanetType type; // 行星类型
     public VectorLF3 uPosition;
     public VectorLF3 uPositionNext;
     public Vector3 veinBiasVector;
