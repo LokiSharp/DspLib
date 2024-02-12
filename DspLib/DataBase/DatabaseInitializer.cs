@@ -3,16 +3,11 @@ using Npgsql;
 
 namespace DspLib.DataBase;
 
-public class DatabaseInitializer
+public class DatabaseInitializer(string connectionString)
 {
-    private readonly string _connectionString = $"Host={Environment.GetEnvironmentVariable("Host")};" +
-                                                $"Database={Environment.GetEnvironmentVariable("Database")};" +
-                                                $"Username={Environment.GetEnvironmentVariable("Username")};" +
-                                                $"Password={Environment.GetEnvironmentVariable("Password")};";
-
     public void CreateTable()
     {
-        using var connection = new NpgsqlConnection(_connectionString);
+        using var connection = new NpgsqlConnection(connectionString);
         connection.Open();
 
 

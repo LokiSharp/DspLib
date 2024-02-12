@@ -32,7 +32,6 @@
 
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.28"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
         <PackageReference Include="Npgsql" Version="8.0.1"/>
     </ItemGroup>
 

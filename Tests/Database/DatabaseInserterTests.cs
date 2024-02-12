@@ -15,9 +15,9 @@ public class DatabaseInserterTests
     [Fact]
     public async void TestInsertGalaxiesInfoInBatch()
     {
-        var numOfTables = 10;
         var startSeed = 0;
         var maxSeed = 99999999;
-        await new DatabaseInserter().InsertGalaxiesInfoInBatch(numOfTables, startSeed, maxSeed, 64);
+        await new DatabaseInserter(new ConnectionString().GetString())
+            .InsertGalaxiesInfoInBatch(startSeed, maxSeed, 64);
     }
 }

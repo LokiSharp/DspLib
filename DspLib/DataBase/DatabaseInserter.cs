@@ -9,20 +9,18 @@ namespace DspLib.DataBase;
 
 public class DatabaseInserter
 {
-    private readonly string _connectionString = $"Host={Environment.GetEnvironmentVariable("Host")};" +
-                                                $"Database={Environment.GetEnvironmentVariable("Database")};" +
-                                                $"Username={Environment.GetEnvironmentVariable("Username")};" +
-                                                $"Password={Environment.GetEnvironmentVariable("Password")};";
+    private readonly string connectionString;
 
-    public DatabaseInserter()
+    public DatabaseInserter(string connectionString)
     {
+        this.connectionString = connectionString;
         PlanetModelingManager.Start();
         RandomTable.Init();
     }
 
     private async Task AddAndSaveChangesInBatch(List<SeedInfo> seeds)
     {
-        await using var connection = new NpgsqlConnection(_connectionString);
+        await using var connection = new NpgsqlConnection(connectionString);
         connection.Open();
 
         await using var transaction = await connection.BeginTransactionAsync();
@@ -108,9 +106,9 @@ VALUES
         await connection.QueryAsync<ulong>(seedStarsTypeCountInfoInsertQuery, seedStarsTypeCountInfo, transaction);
     }
 
-    public async Task InsertGalaxiesInfoInBatch(int numOfTables, int startSeed, int maxSeed, int starCount)
+    public async Task InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
     {
-        var existingSeeds = await GetSeedIdFromAllSeedInfoTables(numOfTables);
+        var existingSeeds = await GetSeedIdFromAllSeedInfoTables();
         var seedInfos = new BlockingCollection<SeedInfo>(10000);
 
         var addAndSaveChangesInBatchSemaphore = new SemaphoreSlim(50);
@@ -168,13 +166,13 @@ VALUES
         }
     }
 
-    private async Task<HashSet<int>> GetSeedIdFromAllSeedInfoTables(int numOfTables)
+    private async Task<HashSet<int>> GetSeedIdFromAllSeedInfoTables()
     {
         const string sqlQuery = @"
 SELECT 种子号, COUNT(*) as Count
 FROM ""SeedInfo""
 GROUP BY 种子号;";
-        var result = await new NpgsqlConnection(_connectionString).QueryAsync<int>(sqlQuery, commandTimeout: 600);
+        var result = await new NpgsqlConnection(connectionString).QueryAsync<int>(sqlQuery, commandTimeout: 600);
 
         return result.ToHashSet();
     }

@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DspLib", "DspLib\DspLib.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2424D880-408C-4A34-9464-EB84B0FBC4B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBaseConsole", "DataBaseConsole\DataBaseConsole.csproj", "{EAFC996D-BAC8-42C6-A99F-9F4D0B126181}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{2424D880-408C-4A34-9464-EB84B0FBC4B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2424D880-408C-4A34-9464-EB84B0FBC4B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2424D880-408C-4A34-9464-EB84B0FBC4B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAFC996D-BAC8-42C6-A99F-9F4D0B126181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAFC996D-BAC8-42C6-A99F-9F4D0B126181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAFC996D-BAC8-42C6-A99F-9F4D0B126181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAFC996D-BAC8-42C6-A99F-9F4D0B126181}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
