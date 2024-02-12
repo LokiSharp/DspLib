@@ -174,7 +174,7 @@ VALUES
 SELECT 种子号, COUNT(*) as Count
 FROM ""SeedInfo""
 GROUP BY 种子号;";
-        var result = await new NpgsqlConnection(_connectionString).QueryAsync<int>(sqlQuery);
+        var result = await new NpgsqlConnection(_connectionString).QueryAsync<int>(sqlQuery, commandTimeout: 600);
 
         return result.ToHashSet();
     }
