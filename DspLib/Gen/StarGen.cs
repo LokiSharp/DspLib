@@ -68,6 +68,23 @@ public static class StarGen
     public static float specifyBirthStarAge = 0.0f;
     private static readonly double[] pGas = new double[10];
 
+    /// <summary>
+    ///     创建一个新的天体。
+    /// </summary>
+    /// <param name="galaxy">要在其中创建新天体的 Galaxy。</param>
+    /// <param name="pos">新天体在银河系的位置。</param>
+    /// <param name="gameDesc">包含游戏描述的 GameDesc 对象。</param>
+    /// <param name="id">新天体的标识 ID。</param>
+    /// <param name="seed">用于生成新天体的种子。</param>
+    /// <param name="needtype">新天体应具有的天体类型。</param>
+    /// <param name="needSpectr">新天体应具有的光谱类型。默认值为 ESpectrType.X。</param>
+    /// <returns>创建的 `StarData` 对象，表示新天体。</returns>
+    /// <remarks>
+    ///     此方法首先根据提供的参数和某些随机值为新 `StarData` 对象设置基础属性。
+    ///     然后，根据这些属性计算新天体的质量、生命期、年龄和温度，并设置相应的属性。
+    ///     接着，它确定新天体的光谱类型和颜色，并根据这些信息设置更多属性。
+    ///     最后，在新天体上，根据一些条件和随机生成的值创建 Hive，并设置相关的 Hive 属性。
+    /// </remarks>
     public static StarData CreateStar(
         GalaxyData galaxy,
         VectorLF3 pos,
@@ -77,6 +94,8 @@ public static class StarGen
         EStarType needtype,
         ESpectrType needSpectr = ESpectrType.X)
     {
+        #region 创建新的 StarData 对象，并设置初始属性，所在星系、索引编号、标识编号、天体级别、种子、天体位置、资源系数
+
         var star = new StarData
         {
             galaxy = galaxy,
@@ -90,10 +109,16 @@ public static class StarGen
         var Seed = dotNet35Random1.Next();
         star.position = pos;
         var magnitude = (float)pos.magnitude;
+        // 生成用于计算的随机参数
         var num1 = magnitude / 32f;
         if (num1 > 1.0)
             num1 = Mathf.Log(Mathf.Log(Mathf.Log(Mathf.Log(Mathf.Log(num1) + 1f) + 1f) + 1f) + 1f) + 1f;
         star.resourceCoef = Mathf.Pow(7f, num1) * 0.6f;
+
+        #endregion
+
+        #region 计算天体质量、生命周期、年龄及温度
+
         var dotNet35Random2 = new DotNet35Random(Seed);
         var r1_1 = dotNet35Random2.NextDouble();
         var r2_1 = dotNet35Random2.NextDouble();
@@ -127,6 +152,7 @@ public static class StarGen
         }
 
         var p1 = (float)(Mathf.Clamp(num8 <= 0.0 ? num8 * 1f : num8 * 2f, -2.4f, 4.65f) + num3 + 1.0);
+        // 计算质量
         switch (needtype)
         {
             case EStarType.WhiteDwarf:
@@ -143,6 +169,7 @@ public static class StarGen
                 break;
         }
 
+        // 计算生命周期及年龄
         var d = 5.0;
         if (star.mass < 2.0)
             d = 2.0 + 0.4 * (1.0 - star.mass);
@@ -181,9 +208,16 @@ public static class StarGen
         if (num9 > 8000.0)
             num9 = (float)((Mathf.Log(Mathf.Log(Mathf.Log(num9 / 8000f) + 1f) + 1f) + 1.0) * 8000.0);
         star.lifetime = num9 / star.age;
+
+        // 计算温度
         var num10 = (float)(1.0 - Mathf.Pow(Mathf.Clamp01(star.age), 20f) * 0.5) * star.mass;
         star.temperature = (float)(Math.Pow(num10, 0.56 + 0.14 / (Math.Log10(num10 + 4.0) / Math.Log10(5.0))) * 4450.0 +
                                    1300.0);
+
+        #endregion
+
+        #region 计算光谱类型、颜色、光谱分类因子、亮度、半径、吸积盘半径、可居住半径、光照平衡半径、轨道缩放值、戴森球半径、天体实际位置、天体名称
+
         var num11 = Math.Log10((star.temperature - 1300.0) / 4500.0) / Math.Log10(2.6) - 0.5;
         if (num11 < 0.0)
             num11 *= 4.0;
@@ -227,6 +261,11 @@ public static class StarGen
             b += 0.05f;
         var num12 = Mathf.Clamp01((float)(1.0 - Mathf.Pow(b * 0.9f + 0.07f, 0.73f) * (double)Mathf.Pow(f2, 0.27f) +
             num6 * 0.079999998211860657 - 0.039999999105930328));
+
+        #endregion
+
+        #region 计算黑雾蜂巢相关参数 TODO
+
         star.hivePatternLevel = num12 < 0.699999988079071 ? num12 < 0.30000001192092896 ? 2 : 1 : 0;
         star.safetyFactor = num12;
         var num13 = dotNet35Random3.Next(0, 1000);
@@ -289,9 +328,23 @@ public static class StarGen
                 star.initialHiveCount = 1;
         }
 
+        #endregion
+
         return star;
     }
 
+    /// <summary>
+    ///     在一个指定银河系中创建一个特定的"出生星"天体。
+    /// </summary>
+    /// <param name="galaxy">这是你想在其中创建天体的银河数据。</param>
+    /// <param name="gameDesc">这是包含游戏描述的GameDesc对象。</param>
+    /// <param name="seed">这是用来生成新天体的种子。</param>
+    /// <returns>它返回一个创建的 StarData 对象，代表新的出生星。</returns>
+    /// <remarks>
+    ///     其中，"出生星"意味着游戏开始时玩家所处的星体。此方法根据给定的参数初始化出生星的大部分属性，包括索引、ID、种子、位置、随机名称等。
+    ///     然后，它使用一些随机数生成不同的值来计算这个新的出生星的其他属性，如质量、光度、半径和轨道大小等。
+    ///     特别地，出生星的年龄、质量和光谱类型有一些特定的规则和设定值。
+    /// </remarks>
     public static StarData CreateBirthStar(GalaxyData galaxy, GameDesc gameDesc, int seed)
     {
         var birthStar = new StarData();
@@ -400,8 +453,21 @@ public static class StarGen
         return Math.Abs(Math.Pow(x, pow)) * num;
     }
 
+    /// <summary>
+    ///     创建一个星系中的星体和行星。
+    /// </summary>
+    /// <param name="galaxy">星系数据对象。</param>
+    /// <param name="star">星体数据对象。</param>
+    /// <param name="gameDesc">游戏描述信息。</param>
+    /// <remarks>
+    ///     此方法首先根据提供的星体种子（通过星体数据对象传入）生成一组随机数。然后根据随机数和星体类型决定此星体将拥有的行星数量和类型。
+    ///     对于每个将要生成的行星，此方法生成一个唯一的种子并使用这个种子创建新的行星。
+    ///     最后，此方法创建一组表示星体周围各个轨道的 AstroOrbitData 对象，并提供关于轨道的详细信息，如倾角和轨道周期。
+    /// </remarks>
     public static void CreateStarPlanets(GalaxyData galaxy, StarData star, GameDesc gameDesc)
     {
+        #region 生成用于计算的随机数
+
         var dotNet35Random1 = new DotNet35Random(star.seed);
         dotNet35Random1.Next();
         dotNet35Random1.Next();
@@ -415,7 +481,13 @@ public static class StarGen
         var num6 = dotNet35Random2.NextDouble() * 0.2 + 0.9;
         var num7 = dotNet35Random2.NextDouble() * 0.2 + 0.9;
         var dotNet35Random3 = new DotNet35Random(dotNet35Random1.Next());
+
+        #endregion
+
         SetHiveOrbitsConditionsTrue();
+
+        #region 依据天体类型及光谱和随机数生成行星
+
         if (star.type == EStarType.BlackHole)
         {
             star.planetCount = 1;
@@ -758,6 +830,10 @@ public static class StarGen
             }
         }
 
+        #endregion
+
+        #region 计算天体的轨道数据
+
         var num16 = 0;
         var num17 = 0;
         var index1 = 0;
@@ -855,8 +931,25 @@ public static class StarGen
             hiveAstroOrbits[index8].orbitNormal = Maths
                 .QRotateLF(hiveAstroOrbits[index8].orbitRotation, new VectorLF3(0.0f, 1f, 0.0f)).normalized;
         }
+
+        #endregion
     }
 
+    /// <summary>
+    ///     根据给定的年龄设置并更新星体的属性。
+    /// </summary>
+    /// <param name="star">要设置年龄的 StarData 星体对象。</param>
+    /// <param name="age">新的年龄，它决定了星体的属性。</param>
+    /// <param name="rn">此参数用于计算星体的某些属性的随机因子。</param>
+    /// <param name="rt">此参数用于计算星体的某些属性的随机因子。</param>
+    /// <remarks>
+    ///     此函数首先使用 rn 和 rt 的值计算一些对应的随机参数。
+    ///     然后，根据输入的年龄，该函数会检查不同的年龄阈值，并根据这些阈值来修改星体的属性。
+    ///     具体的属性修改取决于年龄和星体的质量，其中包括星体的类型、质量、半径、温度、光度、适居区域、平衡光区、颜色等。
+    ///     如果年龄大于或等于1，则根据星体的质量值，可以将其类型设置为黑洞（质量大于或等于18），中子星（质量大于或等于7）
+    ///     或白矮星（质量小于7）。 各自的属性值将根据一些计算进行调整。
+    ///     如果年龄小于1，但大于或等于0.96，该星体将被认为是一颗巨星，并更新相应的属性。
+    /// </remarks>
     public static void SetStarAge(StarData star, float age, double rn, double rt)
     {
         var num1 = (float)(rn * 0.1 + 0.95);
@@ -926,6 +1019,18 @@ public static class StarGen
         }
     }
 
+    /// <summary>
+    ///     生成一个服从指定平均值和标准差的正态分布的随机数。
+    /// </summary>
+    /// <param name="averageValue">期望的平均值。</param>
+    /// <param name="standardDeviation">期望的标准差。</param>
+    /// <param name="r1">用于生成随机数的第一个参数，需要在 0-1 之间。</param>
+    /// <param name="r2">用于生成随机数的第二个参数，需要在 0-1 之间。</param>
+    /// <returns>返回服从指定平均值和标准差的正态分布的随机数。</returns>
+    /// <remarks>
+    ///     此函数使用 Box-Muller 转换来从两个服从均匀分布的随机数生成正态分布的随机数。
+    ///     Box-Muller 转换是一种生成服从正态分布的随机数的常见方法。
+    /// </remarks>
     private static float RandNormal(
         float averageValue,
         float standardDeviation,
