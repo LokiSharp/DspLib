@@ -15,6 +15,6 @@ public class DatabaseInitializerTests
     [Fact]
     public void TestDatabaseInitializer()
     {
-        new DatabaseInitializer().CreateTable(10);
+        new DatabaseInitializer().CreateTable();
     }
 }

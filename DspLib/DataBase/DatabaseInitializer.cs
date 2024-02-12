@@ -10,16 +10,16 @@ public class DatabaseInitializer
                                                 $"Username={Environment.GetEnvironmentVariable("Username")};" +
                                                 $"Password={Environment.GetEnvironmentVariable("Password")};";
 
-    public void CreateTable(int numberOfTableShards)
+    public void CreateTable()
     {
         using var connection = new NpgsqlConnection(_connectionString);
         connection.Open();
 
 
-        var createSeedInfoTableQuery = CreateSeedInfoTable(numberOfTableShards);
-        var createSeedGalaxyInfoTableQuery = SeedGalaxyInfosTable(numberOfTableShards);
-        var createSeedPlanetsTypeCountInfoTableQuery = SeedPlanetsTypeCountInfoTable(numberOfTableShards);
-        var createSeedStarsTypeCountInfoTableQuery = SeedStarsTypeCountInfoTable(numberOfTableShards);
+        var createSeedInfoTableQuery = CreateSeedInfoTable();
+        var createSeedGalaxyInfoTableQuery = SeedGalaxyInfosTable();
+        var createSeedPlanetsTypeCountInfoTableQuery = SeedPlanetsTypeCountInfoTable();
+        var createSeedStarsTypeCountInfoTableQuery = SeedStarsTypeCountInfoTable();
 
         connection.Execute(createSeedInfoTableQuery);
         connection.Execute(createSeedGalaxyInfoTableQuery);
@@ -27,7 +27,7 @@ public class DatabaseInitializer
         connection.Execute(createSeedStarsTypeCountInfoTableQuery);
     }
 
-    private string CreateSeedInfoTable(int numberOfTableShards)
+    private string CreateSeedInfoTable()
     {
         var createSeedInfoTableQuery = $@"
 CREATE TABLE ""SeedInfo""
@@ -54,7 +54,7 @@ CREATE TABLE ""SeedInfo""
         return createSeedInfoTableQuery;
     }
 
-    private string SeedGalaxyInfosTable(int numberOfTableShards)
+    private string SeedGalaxyInfosTable()
     {
         var createSeedGalaxyInfosTableQuery = $@"
 CREATE TABLE ""SeedGalaxyInfo""
@@ -95,7 +95,7 @@ CREATE TABLE ""SeedGalaxyInfo""
         return createSeedGalaxyInfosTableQuery;
     }
 
-    private string SeedPlanetsTypeCountInfoTable(int numberOfTableShards)
+    private string SeedPlanetsTypeCountInfoTable()
     {
         var createSeedPlanetsTypeCountInfoTableQuery = $@"
 CREATE TABLE ""SeedPlanetsTypeCountInfo""
@@ -132,7 +132,7 @@ CREATE TABLE ""SeedPlanetsTypeCountInfo""
         return createSeedPlanetsTypeCountInfoTableQuery;
     }
 
-    private string SeedStarsTypeCountInfoTable(int numberOfTableShards)
+    private string SeedStarsTypeCountInfoTable()
     {
         var createSeedStarsTypeCountInfoTableQuery = $@"
 CREATE TABLE ""SeedStarsTypeCountInfo""
