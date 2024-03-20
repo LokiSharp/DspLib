@@ -33,8 +33,8 @@ insertDatabaseCommand.AddOption(startSeedOption);
 insertDatabaseCommand.AddOption(maxSeedOption);
 insertDatabaseCommand.AddOption(starCountOption);
 insertDatabaseCommand.SetHandler(
-    async (dataSource, startSeed, maxSeed, starCount, environment) =>
-        await InsertDatabase(dataSource!, startSeed, maxSeed, starCount, environment),
+    (dataSource, startSeed, maxSeed, starCount, environment) =>
+        InsertDatabase(dataSource!, startSeed, maxSeed, starCount, environment),
     dataSourceOption, startSeedOption, maxSeedOption, starCountOption,
     environmentOption);
 rootCommand.AddCommand(insertDatabaseCommand);
@@ -49,11 +49,11 @@ void InitDatabase(string dataSource, bool environment)
     new DatabaseInitializer(connectionString).CreateTable();
 }
 
-async Task InsertDatabase(string dataSource, int startSeed, int maxSeed,
+void InsertDatabase(string dataSource, int startSeed, int maxSeed,
     int starCount, bool environment)
 {
     var connectionString = environment
         ? new ConnectionString().GetString()
         : new ConnectionString(dataSource).GetString();
-    await new DatabaseInserter(connectionString).InsertGalaxiesInfoInBatch(startSeed, maxSeed, starCount);
+    new DatabaseInserter(connectionString).InsertGalaxiesInfoInBatch(startSeed, maxSeed, starCount);
 }

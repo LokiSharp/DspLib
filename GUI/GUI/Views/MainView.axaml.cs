@@ -36,6 +36,6 @@ public partial class MainView : UserControl
         int starCount)
     {
         var connectionString = new ConnectionString(dataSource).GetString();
-        await new DatabaseInserter(connectionString).InsertGalaxiesInfoInBatch(startSeed, maxSeed, starCount);
+        new DatabaseInserter(connectionString).InsertGalaxiesInfoInBatch(startSeed, maxSeed, starCount);
     }
 }
