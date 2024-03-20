@@ -2,22 +2,10 @@
 using DspLib.DataBase;
 
 var rootCommand = new RootCommand("DspLib Database CommandLine");
-var hostOption = new Option<string?>(
-    "--host",
-    "Host");
-hostOption.AddAlias("-h");
-var databaseOption = new Option<string?>(
-    "--database",
-    "Database");
-databaseOption.AddAlias("-d");
-var usernameOption = new Option<string?>(
-    "--username",
-    "Username");
-usernameOption.AddAlias("-u");
-var passwordOption = new Option<string?>(
-    "--password",
-    "Password");
-passwordOption.AddAlias("-p");
+var dataSourceOption = new Option<string?>(
+    "--dataSource",
+    "DataSource");
+dataSourceOption.AddAlias("-h");
 var environmentOption = new Option<bool>(
     "--environment",
     "Environment");
@@ -32,46 +20,40 @@ var starCountOption = new Option<int>(
     "--starCount",
     "Num of starCount");
 var initDatabaseCommand = new Command("init", "Init DspLib Database");
-initDatabaseCommand.AddOption(hostOption);
-initDatabaseCommand.AddOption(databaseOption);
-initDatabaseCommand.AddOption(usernameOption);
-initDatabaseCommand.AddOption(passwordOption);
+initDatabaseCommand.AddOption(dataSourceOption);
 initDatabaseCommand.AddOption(environmentOption);
 initDatabaseCommand.SetHandler(InitDatabase!,
-    hostOption, databaseOption, usernameOption, passwordOption, environmentOption);
+    dataSourceOption, environmentOption);
 rootCommand.AddCommand(initDatabaseCommand);
 
 var insertDatabaseCommand = new Command("insert", "insert DspLib Database");
-insertDatabaseCommand.AddOption(hostOption);
-insertDatabaseCommand.AddOption(databaseOption);
-insertDatabaseCommand.AddOption(usernameOption);
-insertDatabaseCommand.AddOption(passwordOption);
+insertDatabaseCommand.AddOption(dataSourceOption);
 insertDatabaseCommand.AddOption(environmentOption);
 insertDatabaseCommand.AddOption(startSeedOption);
 insertDatabaseCommand.AddOption(maxSeedOption);
 insertDatabaseCommand.AddOption(starCountOption);
 insertDatabaseCommand.SetHandler(
-    async (host, database, username, password, startSeed, maxSeed, starCount, environment) =>
-        await InsertDatabase(host!, database!, username!, password!, startSeed, maxSeed, starCount, environment),
-    hostOption, databaseOption, usernameOption, passwordOption, startSeedOption, maxSeedOption, starCountOption,
+    async (dataSource, startSeed, maxSeed, starCount, environment) =>
+        await InsertDatabase(dataSource!, startSeed, maxSeed, starCount, environment),
+    dataSourceOption, startSeedOption, maxSeedOption, starCountOption,
     environmentOption);
 rootCommand.AddCommand(insertDatabaseCommand);
 
 return await rootCommand.InvokeAsync(args);
 
-void InitDatabase(string host, string database, string username, string password, bool environment)
+void InitDatabase(string dataSource, bool environment)
 {
     var connectionString = environment
         ? new ConnectionString().GetString()
-        : new ConnectionString(host, database, username, password).GetString();
+        : new ConnectionString(dataSource).GetString();
     new DatabaseInitializer(connectionString).CreateTable();
 }
 
-async Task InsertDatabase(string host, string database, string username, string password, int startSeed, int maxSeed,
+async Task InsertDatabase(string dataSource, int startSeed, int maxSeed,
     int starCount, bool environment)
 {
     var connectionString = environment
         ? new ConnectionString().GetString()
-        : new ConnectionString(host, database, username, password).GetString();
+        : new ConnectionString(dataSource).GetString();
     await new DatabaseInserter(connectionString).InsertGalaxiesInfoInBatch(startSeed, maxSeed, starCount);
 }
