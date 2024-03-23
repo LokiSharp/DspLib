@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using DuckDB.NET.Data;
+using Npgsql;
 
 namespace DspLib.DataBase;
 
@@ -7,7 +7,7 @@ public class DatabaseInitializer(string connectionString)
 {
     public void CreateTable()
     {
-        using var connection = new DuckDBConnection(connectionString);
+        using var connection = new NpgsqlConnection(connectionString);
         connection.Open();
 
 
@@ -25,25 +25,26 @@ public class DatabaseInitializer(string connectionString)
     private string CreateSeedInfoTable()
     {
         var createSeedInfoTableQuery = $@"
-CREATE TABLE SeedInfo
+CREATE TABLE ""SeedInfo""
 (
-    SeedInfoId      INTEGER,
-    种子号           INTEGER,
-    巨星数           SMALLINT,
-    最多卫星         SMALLINT,
-    最多潮汐星       SMALLINT,
-    潮汐星球数       SMALLINT,
-    最多潮汐永昼永夜 SMALLINT,
-    潮汐永昼永夜数   SMALLINT,
-    熔岩星球数       SMALLINT,
-    海洋星球数       SMALLINT,
-    沙漠星球数       SMALLINT,
-    冰冻星球数       SMALLINT,
-    气态星球数       SMALLINT,
-    总星球数量       SMALLINT,
-    最高亮度         FLOAT,
-    星球总亮度       FLOAT
-);";
+    ""SeedInfoId""       INT NOT NULL,
+    种子号           INT NOT NULL,
+    巨星数           SMALLINT NOT NULL,
+    最多卫星         SMALLINT NOT NULL,
+    最多潮汐星       SMALLINT NOT NULL,
+    潮汐星球数       SMALLINT NOT NULL,
+    最多潮汐永昼永夜 SMALLINT NOT NULL,
+    潮汐永昼永夜数   SMALLINT NOT NULL,
+    熔岩星球数       SMALLINT NOT NULL,
+    海洋星球数       SMALLINT NOT NULL,
+    沙漠星球数       SMALLINT NOT NULL,
+    冰冻星球数       SMALLINT NOT NULL,
+    气态星球数       SMALLINT NOT NULL,
+    总星球数量       SMALLINT NOT NULL,
+    最高亮度         FLOAT NOT NULL,
+    星球总亮度       FLOAT NOT NULL,
+    PRIMARY KEY (""SeedInfoId"")
+) USING columnar;";
 
         return createSeedInfoTableQuery;
     }
@@ -51,39 +52,40 @@ CREATE TABLE SeedInfo
     private string SeedGalaxyInfosTable()
     {
         var createSeedGalaxyInfosTableQuery = $@"
-CREATE TABLE SeedGalaxyInfo
+CREATE TABLE ""SeedGalaxyInfo""
 (
-    SeedGalaxyInfoId   BIGINT,
-    SeedInfoId         INT,
-    恒星类型           SMALLINT,
-    光谱类型           SMALLINT,
-    恒星光度           FLOAT,
-    星系距离           FLOAT,
-    环盖首星           BOOLEAN,
-    星系坐标x          FLOAT,
-    星系坐标y          FLOAT,
-    星系坐标z          FLOAT,
-    潮汐星数           SMALLINT,
-    最多卫星           SMALLINT,
-    星球数量           SMALLINT,
+    ""SeedGalaxyInfoId""   BIGINT NOT NULL,
+    ""SeedInfoId""         INT NOT NULL,
+    恒星类型           SMALLINT NOT NULL,
+    光谱类型           SMALLINT NOT NULL,
+    恒星光度           FLOAT NOT NULL,
+    星系距离           FLOAT NOT NULL,
+    环盖首星           BOOLEAN NOT NULL,
+    星系坐标x          FLOAT NOT NULL,
+    星系坐标y          FLOAT NOT NULL,
+    星系坐标z          FLOAT NOT NULL,
+    潮汐星数           SMALLINT NOT NULL,
+    最多卫星           SMALLINT NOT NULL,
+    星球数量           SMALLINT NOT NULL,
     星球类型           CHAR(5),
-    是否有水           BOOLEAN,
-    有硫酸否           BOOLEAN,
-    铁矿脉             SMALLINT,
-    铜矿脉             SMALLINT,
-    硅矿脉             SMALLINT,
-    钛矿脉             SMALLINT,
-    石矿脉             SMALLINT,
-    煤矿脉             SMALLINT,
-    原油涌泉           SMALLINT,
-    可燃冰矿           SMALLINT,
-    金伯利矿           SMALLINT,
-    分形硅矿           SMALLINT,
-    有机晶体矿         SMALLINT,
-    光栅石矿           SMALLINT,
-    刺笋矿脉           SMALLINT,
-    单极磁矿           SMALLINT
-);";
+    是否有水           BOOLEAN NOT NULL,
+    有硫酸否           BOOLEAN NOT NULL,
+    铁矿脉             SMALLINT NOT NULL,
+    铜矿脉             SMALLINT NOT NULL,
+    硅矿脉             SMALLINT NOT NULL,
+    钛矿脉             SMALLINT NOT NULL,
+    石矿脉             SMALLINT NOT NULL,
+    煤矿脉             SMALLINT NOT NULL,
+    原油涌泉           SMALLINT NOT NULL,
+    可燃冰矿           SMALLINT NOT NULL,
+    金伯利矿           SMALLINT NOT NULL,
+    分形硅矿           SMALLINT NOT NULL,
+    有机晶体矿         SMALLINT NOT NULL,
+    光栅石矿           SMALLINT NOT NULL,
+    刺笋矿脉           SMALLINT NOT NULL,
+    单极磁矿           SMALLINT NOT NULL,
+    PRIMARY KEY (""SeedGalaxyInfoId"", ""SeedInfoId"")
+) USING columnar;";
 
         return createSeedGalaxyInfosTableQuery;
     }
@@ -91,35 +93,36 @@ CREATE TABLE SeedGalaxyInfo
     private string SeedPlanetsTypeCountInfoTable()
     {
         var createSeedPlanetsTypeCountInfoTableQuery = $@"
-CREATE TABLE SeedPlanetsTypeCountInfo
+CREATE TABLE ""SeedPlanetsTypeCountInfo""
 (
-    SeedInfoId                  INT,
-    地中海                      SMALLINT,
-    气态巨星1                   SMALLINT,
-    气态巨星2                   SMALLINT,
-    冰巨星1                     SMALLINT,
-    冰巨星2                     SMALLINT,
-    干旱荒漠                    SMALLINT,
-    灰烬冻土                    SMALLINT,
-    海洋丛林                    SMALLINT,
-    熔岩                        SMALLINT,
-    冰原冻土                    SMALLINT,
-    贫瘠荒漠                    SMALLINT,
-    戈壁                        SMALLINT,
-    火山灰                      SMALLINT,
-    红石                        SMALLINT,
-    草原                        SMALLINT,
-    水世界                      SMALLINT,
-    黑石盐滩                    SMALLINT,
-    樱林海                      SMALLINT,
-    飓风石林                    SMALLINT,
-    猩红冰湖                    SMALLINT,
-    气态巨星3                   SMALLINT,
-    热带草原                    SMALLINT,
-    橙晶荒漠                    SMALLINT,
-    极寒冻土                    SMALLINT,
-    潘多拉沼泽                  SMALLINT
-);";
+    ""SeedInfoId""                  INT NOT NULL,
+    地中海                      SMALLINT NOT NULL,
+    气态巨星1                   SMALLINT NOT NULL,
+    气态巨星2                   SMALLINT NOT NULL,
+    冰巨星1                     SMALLINT NOT NULL,
+    冰巨星2                     SMALLINT NOT NULL,
+    干旱荒漠                    SMALLINT NOT NULL,
+    灰烬冻土                    SMALLINT NOT NULL,
+    海洋丛林                    SMALLINT NOT NULL,
+    熔岩                        SMALLINT NOT NULL,
+    冰原冻土                    SMALLINT NOT NULL,
+    贫瘠荒漠                    SMALLINT NOT NULL,
+    戈壁                        SMALLINT NOT NULL,
+    火山灰                      SMALLINT NOT NULL,
+    红石                        SMALLINT NOT NULL,
+    草原                        SMALLINT NOT NULL,
+    水世界                      SMALLINT NOT NULL,
+    黑石盐滩                    SMALLINT NOT NULL,
+    樱林海                      SMALLINT NOT NULL,
+    飓风石林                    SMALLINT NOT NULL,
+    猩红冰湖                    SMALLINT NOT NULL,
+    气态巨星3                   SMALLINT NOT NULL,
+    热带草原                    SMALLINT NOT NULL,
+    橙晶荒漠                    SMALLINT NOT NULL,
+    极寒冻土                    SMALLINT NOT NULL,
+    潘多拉沼泽                  SMALLINT NOT NULL,
+    PRIMARY KEY (""SeedInfoId"")
+) USING columnar;";
 
         return createSeedPlanetsTypeCountInfoTableQuery;
     }
@@ -127,29 +130,30 @@ CREATE TABLE SeedPlanetsTypeCountInfo
     private string SeedStarsTypeCountInfoTable()
     {
         var createSeedStarsTypeCountInfoTableQuery = $@"
-CREATE TABLE SeedStarsTypeCountInfo
+CREATE TABLE ""SeedStarsTypeCountInfo""
 (
-    SeedInfoId                INT,
-    M型恒星                   SMALLINT,
-    K型恒星                   SMALLINT,
-    G型恒星                   SMALLINT,
-    F型恒星                   SMALLINT,
-    A型恒星                   SMALLINT,
-    B型恒星                   SMALLINT,
-    O型恒星                   SMALLINT,
-    X型恒星                   SMALLINT,
-    M型巨星                   SMALLINT,
-    K型巨星                   SMALLINT,
-    G型巨星                   SMALLINT,
-    F型巨星                   SMALLINT,
-    A型巨星                   SMALLINT,
-    B型巨星                   SMALLINT,
-    O型巨星                   SMALLINT,
-    X型巨星                   SMALLINT,
-    白矮星                    SMALLINT,
-    中子星                    SMALLINT,
-    黑洞                      SMALLINT
-);";
+    ""SeedInfoId""                INT NOT NULL,
+    M型恒星                   SMALLINT NOT NULL,
+    K型恒星                   SMALLINT NOT NULL,
+    G型恒星                   SMALLINT NOT NULL,
+    F型恒星                   SMALLINT NOT NULL,
+    A型恒星                   SMALLINT NOT NULL,
+    B型恒星                   SMALLINT NOT NULL,
+    O型恒星                   SMALLINT NOT NULL,
+    X型恒星                   SMALLINT NOT NULL,
+    M型巨星                   SMALLINT NOT NULL,
+    K型巨星                   SMALLINT NOT NULL,
+    G型巨星                   SMALLINT NOT NULL,
+    F型巨星                   SMALLINT NOT NULL,
+    A型巨星                   SMALLINT NOT NULL,
+    B型巨星                   SMALLINT NOT NULL,
+    O型巨星                   SMALLINT NOT NULL,
+    X型巨星                   SMALLINT NOT NULL,
+    白矮星                    SMALLINT NOT NULL,
+    中子星                    SMALLINT NOT NULL,
+    黑洞                      SMALLINT NOT NULL,
+    PRIMARY KEY (""SeedInfoId"")
+) USING columnar;";
 
         return createSeedStarsTypeCountInfoTableQuery;
     }
