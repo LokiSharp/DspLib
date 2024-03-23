@@ -9,27 +9,26 @@ namespace DspLib.DataBase;
 
 public class DatabaseInserter
 {
+    private readonly DuckDBConnection connection;
     private readonly string connectionString;
 
     public DatabaseInserter(string connectionString)
     {
         this.connectionString = connectionString;
+        connection = new DuckDBConnection(connectionString);
         PlanetModelingManager.Start();
         RandomTable.Init();
     }
 
     private void AddAndSaveChangesInBatch(List<SeedInfo> seeds)
     {
-        using var connection = new DuckDBConnection(connectionString);
-        connection.Open();
-
         using var transaction = connection.BeginTransaction();
         try
         {
             foreach (var seedInfo in seeds)
             {
                 seedInfo.SeedInfoId = seedInfo.种子号;
-                AddSeedInfo(seedInfo, connection, transaction);
+                AddSeedInfo(seedInfo, transaction);
 
                 var i = 0;
                 foreach (var seedGalaxyInfo in seedInfo.SeedGalaxyInfos!)
@@ -37,15 +36,15 @@ public class DatabaseInserter
                     i++;
                     seedGalaxyInfo.SeedInfoId = seedInfo.SeedInfoId;
                     seedGalaxyInfo.SeedGalaxyInfoId = seedInfo.SeedInfoId * 64 + i;
-                    AddSeedGalaxyInfo(seedGalaxyInfo, connection, transaction);
+                    AddSeedGalaxyInfo(seedGalaxyInfo, transaction);
                 }
 
                 seedInfo.SeedPlanetsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
-                AddSeedPlanetsTypeCountInfo(seedInfo.SeedPlanetsTypeCountInfo, connection,
+                AddSeedPlanetsTypeCountInfo(seedInfo.SeedPlanetsTypeCountInfo,
                     transaction);
 
                 seedInfo.SeedStarsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
-                AddSeedStarsTypeCountInfo(seedInfo.SeedStarsTypeCountInfo, connection, transaction);
+                AddSeedStarsTypeCountInfo(seedInfo.SeedStarsTypeCountInfo, transaction);
             }
 
             transaction.CommitAsync();
@@ -58,8 +57,7 @@ public class DatabaseInserter
         }
     }
 
-    private void AddSeedInfo(SeedInfo seedInfo, DbConnection connection,
-        DbTransaction transaction)
+    private void AddSeedInfo(SeedInfo seedInfo, DbTransaction transaction)
     {
         var seedInfoInsertQuery = @"
 INSERT INTO SeedInfo
@@ -70,8 +68,7 @@ VALUES
         connection.Query(seedInfoInsertQuery, seedInfo, transaction);
     }
 
-    private void AddSeedGalaxyInfo(SeedGalaxyInfo seedGalaxyInfo, DbConnection connection,
-        DbTransaction transaction)
+    private void AddSeedGalaxyInfo(SeedGalaxyInfo seedGalaxyInfo, DbTransaction transaction)
     {
         var seedGalaxyInfosInsertQuery = @"
 INSERT INTO SeedGalaxyInfo
@@ -83,7 +80,7 @@ VALUES
     }
 
     private void AddSeedPlanetsTypeCountInfo(SeedPlanetsTypeCountInfo seedPlanetsTypeCountInfo,
-        DbConnection connection, DbTransaction transaction)
+        DbTransaction transaction)
     {
         var seedPlanetsTypeCountInfoInsertQuery = @"
 INSERT INTO SeedPlanetsTypeCountInfo
@@ -94,8 +91,7 @@ VALUES
         connection.Query(seedPlanetsTypeCountInfoInsertQuery, seedPlanetsTypeCountInfo, transaction);
     }
 
-    private void AddSeedStarsTypeCountInfo(SeedStarsTypeCountInfo seedStarsTypeCountInfo,
-        DbConnection connection, DbTransaction transaction)
+    private void AddSeedStarsTypeCountInfo(SeedStarsTypeCountInfo seedStarsTypeCountInfo, DbTransaction transaction)
     {
         var seedStarsTypeCountInfoInsertQuery = @"
 INSERT INTO SeedStarsTypeCountInfo
@@ -174,7 +170,7 @@ VALUES
 SELECT 种子号, COUNT(*) as Count
 FROM SeedInfo
 GROUP BY 种子号;";
-        var result = new DuckDBConnection(connectionString).Query<int>(sqlQuery, commandTimeout: 600);
+        var result = connection.Query<int>(sqlQuery, commandTimeout: 600);
 
         return result.ToHashSet();
     }
