@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Data.Common;
 using Dapper;
 using DspLib.DataBase.Model;
 using DspLib.Dyson;
@@ -44,15 +43,19 @@ VALUES
         RandomTable.Init();
     }
 
-    private void AddAndSaveChangesInBatch(List<SeedInfo> seeds)
+    private async Task AddAndSaveChangesInBatch(List<SeedInfo> seeds)
     {
-        using var transaction = connection.BeginTransaction();
+        await using var transaction = await connection.BeginTransactionAsync();
         try
         {
+            var seedInfos = new List<SeedInfo>();
+            var seedGalaxyInfos = new List<SeedGalaxyInfo>();
+            var seedPlanetsTypeCountInfos = new List<SeedPlanetsTypeCountInfo>();
+            var seedStarsTypeCountInfos = new List<SeedStarsTypeCountInfo>();
             foreach (var seedInfo in seeds)
             {
                 seedInfo.SeedInfoId = seedInfo.种子号;
-                AddSeedInfo(seedInfo, transaction);
+                seedInfos.Add(seedInfo);
 
                 var i = 0;
                 foreach (var seedGalaxyInfo in seedInfo.SeedGalaxyInfos!)
@@ -60,46 +63,28 @@ VALUES
                     i++;
                     seedGalaxyInfo.SeedInfoId = seedInfo.SeedInfoId;
                     seedGalaxyInfo.SeedGalaxyInfoId = seedInfo.SeedInfoId * 64 + i;
-                    AddSeedGalaxyInfo(seedGalaxyInfo, transaction);
+                    seedGalaxyInfos.Add(seedGalaxyInfo);
                 }
 
                 seedInfo.SeedPlanetsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
-                AddSeedPlanetsTypeCountInfo(seedInfo.SeedPlanetsTypeCountInfo,
-                    transaction);
+                seedPlanetsTypeCountInfos.Add(seedInfo.SeedPlanetsTypeCountInfo);
 
                 seedInfo.SeedStarsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
-                AddSeedStarsTypeCountInfo(seedInfo.SeedStarsTypeCountInfo, transaction);
+                seedStarsTypeCountInfos.Add(seedInfo.SeedStarsTypeCountInfo);
             }
 
-            transaction.Commit();
+            await connection.ExecuteAsync(seedInfoInsertQuery, seedInfos, transaction);
+            await connection.ExecuteAsync(seedGalaxyInfosInsertQuery, seedGalaxyInfos, transaction);
+            await connection.ExecuteAsync(seedPlanetsTypeCountInfoInsertQuery, seedPlanetsTypeCountInfos, transaction);
+            await connection.ExecuteAsync(seedStarsTypeCountInfoInsertQuery, seedStarsTypeCountInfos, transaction);
+            await transaction.CommitAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            transaction.Rollback();
+            await transaction.RollbackAsync();
             throw;
         }
-    }
-
-    private void AddSeedInfo(SeedInfo seedInfo, DbTransaction transaction)
-    {
-        connection.Execute(seedInfoInsertQuery, seedInfo, transaction);
-    }
-
-    private void AddSeedGalaxyInfo(SeedGalaxyInfo seedGalaxyInfo, DbTransaction transaction)
-    {
-        connection.Execute(seedGalaxyInfosInsertQuery, seedGalaxyInfo, transaction);
-    }
-
-    private void AddSeedPlanetsTypeCountInfo(SeedPlanetsTypeCountInfo seedPlanetsTypeCountInfo,
-        DbTransaction transaction)
-    {
-        connection.Execute(seedPlanetsTypeCountInfoInsertQuery, seedPlanetsTypeCountInfo, transaction);
-    }
-
-    private void AddSeedStarsTypeCountInfo(SeedStarsTypeCountInfo seedStarsTypeCountInfo, DbTransaction transaction)
-    {
-        connection.Execute(seedStarsTypeCountInfoInsertQuery, seedStarsTypeCountInfo, transaction);
     }
 
     public async Task InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
@@ -119,10 +104,10 @@ VALUES
                 await commitLock.WaitAsync();
                 try
                 {
-                    if (seedInfos.Count >= 10)
+                    if (seedInfos.Count >= 100)
                     {
                         Console.WriteLine($"Commit, Task: {throttler.CurrentCount}, seedInfos: {seedInfos.Count}");
-                        Commit();
+                        await Commit();
                         Console.WriteLine("Commit finish");
                     }
 
@@ -153,7 +138,7 @@ VALUES
         }
 
         var remaining = seedInfos.ToList();
-        if (remaining.Count > 0) AddAndSaveChangesInBatch(remaining);
+        if (remaining.Count > 0) await AddAndSaveChangesInBatch(remaining);
         return;
 
         void Body(int seed)
@@ -162,13 +147,13 @@ VALUES
             seedInfos.Add(seedInfo);
         }
 
-        void Commit()
+        async Task Commit()
         {
             var toSubmit = new List<SeedInfo>();
 
             while (seedInfos.TryTake(out var takenSeed)) toSubmit.Add(takenSeed);
 
-            AddAndSaveChangesInBatch(toSubmit);
+            await AddAndSaveChangesInBatch(toSubmit);
         }
     }
 
