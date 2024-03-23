@@ -24,7 +24,7 @@ public class DatabaseInitializer(string connectionString)
 
     private string CreateSeedInfoTable()
     {
-        var createSeedInfoTableQuery = $@"
+        var createSeedInfoTableQuery = @"
 CREATE TABLE ""SeedInfo""
 (
     ""SeedInfoId""       INT NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE ""SeedInfo""
 
     private string SeedGalaxyInfosTable()
     {
-        var createSeedGalaxyInfosTableQuery = $@"
+        var createSeedGalaxyInfosTableQuery = @"
 CREATE TABLE ""SeedGalaxyInfo""
 (
     ""SeedGalaxyInfoId""   BIGINT NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE ""SeedGalaxyInfo""
 
     private string SeedPlanetsTypeCountInfoTable()
     {
-        var createSeedPlanetsTypeCountInfoTableQuery = $@"
+        var createSeedPlanetsTypeCountInfoTableQuery = @"
 CREATE TABLE ""SeedPlanetsTypeCountInfo""
 (
     ""SeedInfoId""                  INT NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE ""SeedPlanetsTypeCountInfo""
 
     private string SeedStarsTypeCountInfoTable()
     {
-        var createSeedStarsTypeCountInfoTableQuery = $@"
+        var createSeedStarsTypeCountInfoTableQuery = @"
 CREATE TABLE ""SeedStarsTypeCountInfo""
 (
     ""SeedInfoId""                INT NOT NULL,

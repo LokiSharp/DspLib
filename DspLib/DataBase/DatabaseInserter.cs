@@ -8,7 +8,7 @@ namespace DspLib.DataBase;
 
 public class DatabaseInserter
 {
-    private readonly NpgsqlConnection connection;
+    private readonly string connectionString;
 
     private readonly string seedGalaxyInfosInsertQuery = @"
 INSERT INTO ""SeedGalaxyInfo""
@@ -37,14 +37,15 @@ VALUES
 
     public DatabaseInserter(string connectionString)
     {
-        connection = new NpgsqlConnection(connectionString);
-        connection.Open();
+        this.connectionString = connectionString;
         PlanetModelingManager.Start();
         RandomTable.Init();
     }
 
     private async Task AddAndSaveChangesInBatch(List<SeedInfo> seeds)
     {
+        await using var connection = new NpgsqlConnection(connectionString);
+        connection.Open();
         await using var transaction = await connection.BeginTransactionAsync();
         try
         {
@@ -104,14 +105,12 @@ VALUES
                 await commitLock.WaitAsync();
                 try
                 {
-                    if (seedInfos.Count >= 100)
+                    if (seedInfos.Count >= 1000)
                     {
                         Console.WriteLine($"Commit, Task: {throttler.CurrentCount}, seedInfos: {seedInfos.Count}");
                         await Commit();
                         Console.WriteLine("Commit finish");
                     }
-
-                    ;
                 }
                 finally
                 {
@@ -149,16 +148,25 @@ VALUES
 
         async Task Commit()
         {
+            const int batchSize = 100;
+            var seedBatches = new List<List<SeedInfo>>();
+
             var toSubmit = new List<SeedInfo>();
 
             while (seedInfos.TryTake(out var takenSeed)) toSubmit.Add(takenSeed);
 
-            await AddAndSaveChangesInBatch(toSubmit);
+            for (var i = 0; i < toSubmit.Count; i += batchSize)
+                seedBatches.Add(toSubmit.GetRange(i, Math.Min(batchSize, toSubmit.Count - i)));
+
+            var tasks = seedBatches.Select(AddAndSaveChangesInBatch);
+
+            await Task.WhenAll(tasks);
         }
     }
 
     private HashSet<int> GetSeedIdFromAllSeedInfoTables()
     {
+        using var connection = new NpgsqlConnection(connectionString);
         const string sqlQuery = @"
 SELECT 种子号, COUNT(*) as Count
 FROM ""SeedInfo""
