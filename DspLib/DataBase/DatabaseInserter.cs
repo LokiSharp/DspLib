@@ -105,68 +105,106 @@ VALUES
 
     public async Task InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
     {
-        var existingSeeds = GetSeedIdFromAllSeedInfoTables();
-        var seedInfos = new ConcurrentBag<SeedInfo>();
-
-        var commitLock = new SemaphoreSlim(1, 1);
+        const int highProducerWaterMark = 20000;
+        const int lowProducerWaterMark = 10000;
+        const int maxProducerCount = 20;
+        const int highConsumerWaterMark = 10000;
+        const int lowConsumerWaterMark = 5000;
+        const int maxConsumerCount = 200;
 
         var seeds = new HashSet<int>(Enumerable.Range(startSeed, maxSeed - startSeed + 1));
+        var existingSeeds = GetSeedIdFromAllSeedInfoTables();
         seeds.ExceptWith(existingSeeds);
-        var seedsBag = new ConcurrentBag<int>(seeds);
+        var seedsQueue = new ConcurrentQueue<int>(seeds);
+        var seedInfosQueue = new ConcurrentQueue<SeedInfo>();
 
-        var commitTask = Task.Run(async () =>
+        var producers = new List<Task>();
+        var producerTokens = new List<CancellationTokenSource>();
+        var producersLock = new object();
+        var consumers = new List<Task>();
+        var consumerTokens = new List<CancellationTokenSource>();
+        var consumersLock = new object();
+
+        var mainTask = Task.Run(() =>
         {
             while (true)
             {
-                await commitLock.WaitAsync();
+                Console.WriteLine($"SeedsQueue count: {seedsQueue.Count:D8}\t" +
+                                  $"SeedInfosQueue count: {seedInfosQueue.Count:D8}\t" +
+                                  $"Producer tasks: {producers.Count(t => !t.IsCompleted):D2}\t" +
+                                  $"Consumer tasks: {consumers.Count(t => !t.IsCompleted):D2}");
 
-                try
+                if (seedsQueue.Count <= 0 && seedInfosQueue.Count <= 0) break;
+
+
+                if (seedInfosQueue.Count < lowProducerWaterMark && producers.Count < maxProducerCount)
                 {
-                    if (seedsBag.IsEmpty) break;
-                    if (seedInfos.Count >= 1000)
+                    var cts = new CancellationTokenSource();
+                    producerTokens.Add(cts);
+                    producers.Add(Task.Run(() => Producer(cts.Token), cts.Token));
+                }
+                else if (seedInfosQueue.Count > highProducerWaterMark && producers.Count > 1)
+                {
+                    lock (producersLock)
                     {
-                        await Commit();
+                        producerTokens[0].Cancel();
+                        producerTokens.RemoveAt(0);
+                        producers.RemoveAt(0);
                     }
                 }
-                finally
+
+                if (seedInfosQueue.Count > highConsumerWaterMark && consumers.Count < maxConsumerCount)
                 {
-                    commitLock.Release();
+                    var cts = new CancellationTokenSource();
+                    consumerTokens.Add(cts);
+                    consumers.Add(Task.Run(() => Consume(cts.Token), cts.Token));
                 }
+                else if (seedInfosQueue.Count < lowConsumerWaterMark && consumers.Count > 1)
+                {
+                    lock (consumersLock)
+                    {
+                        consumerTokens[0].Cancel();
+                        consumerTokens.RemoveAt(0);
+                        consumers.RemoveAt(0);
+                    }
+                }
+
+                Thread.Sleep(1000);
             }
         });
 
-        var generateSeedTask = Task.Run(async () => { Parallel.For(0, 10, i => { GenerateSeed(); }); });
+        mainTask.Wait();
 
-        Task.WaitAll(commitTask, generateSeedTask);
-
-        var remaining = seedInfos.ToList();
+        var remaining = seedInfosQueue.ToList();
         if (remaining.Count > 0) await AddAndSaveChangesInBatch(remaining);
         return;
 
+        void Producer(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested && !seedsQueue.IsEmpty) GenerateSeed();
+        }
+
+        async Task Consume(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested && !seedInfosQueue.IsEmpty) await Commit();
+        }
+
         void GenerateSeed()
         {
-            while (seedsBag.TryTake(out var takenSeed))
+            while (seedsQueue.TryDequeue(out var takenSeed))
             {
                 var seedInfo = SeedGenerator.GenerateSeedInfo(takenSeed, starCount);
-                seedInfos.Add(seedInfo);
+                seedInfosQueue.Enqueue(seedInfo);
             }
         }
 
         async Task Commit()
         {
-            const int batchSize = 200;
-            var seedBatches = new List<List<SeedInfo>>();
-
             var toSubmit = new List<SeedInfo>();
 
-            while (seedInfos.TryTake(out var takenSeed)) toSubmit.Add(takenSeed);
+            while (toSubmit.Count <= 1000 && seedInfosQueue.TryDequeue(out var takenSeed)) toSubmit.Add(takenSeed);
 
-            for (var i = 0; i < toSubmit.Count; i += batchSize)
-                seedBatches.Add(toSubmit.GetRange(i, Math.Min(batchSize, toSubmit.Count - i)));
-
-            var tasks = seedBatches.Select(AddAndSaveChangesInBatch);
-
-            await Task.WhenAll(tasks);
+            await AddAndSaveChangesInBatch(toSubmit);
         }
     }
 
