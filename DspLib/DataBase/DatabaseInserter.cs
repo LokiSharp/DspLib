@@ -110,7 +110,8 @@ VALUES
         const int maxProducerCount = 20;
         const int highConsumerWaterMark = 10000;
         const int lowConsumerWaterMark = 5000;
-        const int maxConsumerCount = 200;
+        const int maxConsumerCount = 100;
+        const int batchSize = 1000;
 
         var seeds = new HashSet<int>(Enumerable.Range(startSeed, maxSeed - startSeed + 1));
         var existingSeeds = GetSeedIdFromAllSeedInfoTables();
@@ -202,7 +203,11 @@ VALUES
         {
             var toSubmit = new List<SeedInfo>();
 
-            while (toSubmit.Count <= 1000 && seedInfosQueue.TryDequeue(out var takenSeed)) toSubmit.Add(takenSeed);
+            while (seedInfosQueue.TryDequeue(out var takenSeed))
+            {
+                toSubmit.Add(takenSeed);
+                if (toSubmit.Count >= batchSize) break;
+            }
 
             await AddAndSaveChangesInBatch(toSubmit);
         }
