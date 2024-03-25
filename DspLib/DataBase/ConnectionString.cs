@@ -16,6 +16,7 @@ public class ConnectionString(string host, string database, string username, str
         return $"Host={host};" +
                $"Database={database};" +
                $"Username={username};" +
-               $"Password={password};";
+               $"Password={password};" +
+               $"Maximum Pool Size=1000;";
     }
 }

@@ -13,11 +13,11 @@ public class DatabaseInserterTests
     }
 
     [Fact]
-    public async Task TestInsertGalaxiesInfoInBatch()
+    public void TestInsertGalaxiesInfoInBatch()
     {
         var startSeed = 0;
         var maxSeed = 99999999;
-        await new DatabaseInserter(new ConnectionString().GetString())
+        new DatabaseInserter(new ConnectionString().GetString())
             .InsertGalaxiesInfoInBatch(startSeed, maxSeed, 64);
     }
 }

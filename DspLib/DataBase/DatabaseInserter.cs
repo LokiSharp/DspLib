@@ -34,8 +34,6 @@ INSERT INTO ""SeedStarsTypeCountInfo""
 VALUES 
 (@SeedInfoId, @M型恒星, @K型恒星, @G型恒星, @F型恒星, @A型恒星, @B型恒星, @O型恒星, @X型恒星, @M型巨星, @K型巨星, @G型巨星, @F型巨星, @A型巨星, @B型巨星, @O型巨星, @X型巨星, @白矮星, @中子星, @黑洞);";
 
-    private readonly SemaphoreSlim semaphore = new(100);
-
 
     public DatabaseInserter(string connectionString)
     {
@@ -44,74 +42,70 @@ VALUES
         RandomTable.Init();
     }
 
-    private async Task AddAndSaveChangesInBatch(List<SeedInfo> seeds)
+    private void AddAndSaveChangesInBatch(List<SeedInfo> seeds)
     {
-        await semaphore.WaitAsync();
+        using var connection = new NpgsqlConnection(connectionString);
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
         try
         {
-            await using var connection = new NpgsqlConnection(connectionString);
-            await connection.OpenAsync();
-            await using var transaction = await connection.BeginTransactionAsync();
-            try
+            var seedInfos = new List<SeedInfo>();
+            var seedGalaxyInfos = new List<SeedGalaxyInfo>();
+            var seedPlanetsTypeCountInfos = new List<SeedPlanetsTypeCountInfo>();
+            var seedStarsTypeCountInfos = new List<SeedStarsTypeCountInfo>();
+            foreach (var seedInfo in seeds)
             {
-                var seedInfos = new List<SeedInfo>();
-                var seedGalaxyInfos = new List<SeedGalaxyInfo>();
-                var seedPlanetsTypeCountInfos = new List<SeedPlanetsTypeCountInfo>();
-                var seedStarsTypeCountInfos = new List<SeedStarsTypeCountInfo>();
-                foreach (var seedInfo in seeds)
+                seedInfo.SeedInfoId = seedInfo.种子号;
+                seedInfos.Add(seedInfo);
+
+                var i = 0;
+                foreach (var seedGalaxyInfo in seedInfo.SeedGalaxyInfos!)
                 {
-                    seedInfo.SeedInfoId = seedInfo.种子号;
-                    seedInfos.Add(seedInfo);
-
-                    var i = 0;
-                    foreach (var seedGalaxyInfo in seedInfo.SeedGalaxyInfos!)
-                    {
-                        i++;
-                        seedGalaxyInfo.SeedInfoId = seedInfo.SeedInfoId;
-                        seedGalaxyInfo.SeedGalaxyInfoId = seedInfo.SeedInfoId * 64 + i;
-                        seedGalaxyInfos.Add(seedGalaxyInfo);
-                    }
-
-                    seedInfo.SeedPlanetsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
-                    seedPlanetsTypeCountInfos.Add(seedInfo.SeedPlanetsTypeCountInfo);
-
-                    seedInfo.SeedStarsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
-                    seedStarsTypeCountInfos.Add(seedInfo.SeedStarsTypeCountInfo);
+                    i++;
+                    seedGalaxyInfo.SeedInfoId = seedInfo.SeedInfoId;
+                    seedGalaxyInfo.SeedGalaxyInfoId = seedInfo.SeedInfoId * 64 + i;
+                    seedGalaxyInfos.Add(seedGalaxyInfo);
                 }
 
-                await connection.ExecuteAsync(seedInfoInsertQuery, seedInfos, transaction);
-                await connection.ExecuteAsync(seedGalaxyInfosInsertQuery, seedGalaxyInfos, transaction);
-                await connection.ExecuteAsync(seedPlanetsTypeCountInfoInsertQuery, seedPlanetsTypeCountInfos,
-                    transaction);
-                await connection.ExecuteAsync(seedStarsTypeCountInfoInsertQuery, seedStarsTypeCountInfos, transaction);
-                await transaction.CommitAsync();
+                seedInfo.SeedPlanetsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
+                seedPlanetsTypeCountInfos.Add(seedInfo.SeedPlanetsTypeCountInfo);
+
+                seedInfo.SeedStarsTypeCountInfo!.SeedInfoId = seedInfo.SeedInfoId;
+                seedStarsTypeCountInfos.Add(seedInfo.SeedStarsTypeCountInfo);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                await transaction.RollbackAsync();
-                throw;
-            }
-            finally
-            {
-                await connection.CloseAsync();
-            }
+
+            connection.Execute(seedInfoInsertQuery, seedInfos, transaction);
+            connection.Execute(seedGalaxyInfosInsertQuery, seedGalaxyInfos, transaction);
+            connection.Execute(seedPlanetsTypeCountInfoInsertQuery, seedPlanetsTypeCountInfos, transaction);
+            connection.Execute(seedStarsTypeCountInfoInsertQuery, seedStarsTypeCountInfos, transaction);
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            transaction.Rollback();
+            throw;
         }
         finally
         {
-            semaphore.Release();
+            connection.Close();
         }
     }
 
-    public async Task InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
+    public void InsertGalaxiesInfoInBatch(int startSeed, int maxSeed, int starCount)
     {
         const int highProducerWaterMark = 20000;
-        const int lowProducerWaterMark = 10000;
+        const int lowProducerWaterMark = 4000;
         const int maxProducerCount = 20;
-        const int highConsumerWaterMark = 10000;
-        const int lowConsumerWaterMark = 5000;
-        const int maxConsumerCount = 100;
-        const int batchSize = 1000;
+        const int highConsumerWaterMark = 1000;
+        const int lowConsumerWaterMark = 500;
+        const int maxConsumerCount = 20;
+        const int batchSize = 100;
+
+        var producerCountersTotal = new ConcurrentDictionary<int, int>();
+        var consumerCountersTotal = new ConcurrentDictionary<int, int>();
+        var producerCountersLastSecond = new ConcurrentDictionary<int, int>();
+        var consumerCountersLastSecond = new ConcurrentDictionary<int, int>();
 
         var seeds = new HashSet<int>(Enumerable.Range(startSeed, maxSeed - startSeed + 1));
         var existingSeeds = GetSeedIdFromAllSeedInfoTables();
@@ -128,8 +122,24 @@ VALUES
 
         var mainTask = Task.Run(() =>
         {
+            var runTime = 0;
             while (true)
             {
+                runTime += 1;
+                var totalProduced = producerCountersTotal.Values.Sum();
+                var totalConsumed = consumerCountersTotal.Values.Sum();
+                var producedLastSecond = producerCountersLastSecond.Values.Sum();
+                var consumedLastSecond = consumerCountersLastSecond.Values.Sum();
+
+                var producedPreSecond = totalProduced / runTime;
+                var consumedPreSecond = totalConsumed / runTime;
+
+                Console.WriteLine($"[Total] P: {totalProduced}, C: {totalConsumed} " +
+                                  $"[Last second] P: {producedLastSecond}, C: {consumedLastSecond} " +
+                                  $"[Pre Second] P: {producedPreSecond}, C: {consumedPreSecond}");
+                producerCountersLastSecond.Clear();
+                consumerCountersLastSecond.Clear();
+
                 Console.WriteLine($"SeedsQueue count: {seedsQueue.Count:D8}\t" +
                                   $"SeedInfosQueue count: {seedInfosQueue.Count:D8}\t" +
                                   $"Producer tasks: {producers.Count(t => !t.IsCompleted):D2}\t" +
@@ -177,7 +187,7 @@ VALUES
         mainTask.Wait();
 
         var remaining = seedInfosQueue.ToList();
-        if (remaining.Count > 0) await AddAndSaveChangesInBatch(remaining);
+        if (remaining.Count > 0) AddAndSaveChangesInBatch(remaining);
         return;
 
         void Producer(CancellationToken token)
@@ -185,31 +195,47 @@ VALUES
             while (!token.IsCancellationRequested && !seedsQueue.IsEmpty) GenerateSeed();
         }
 
-        async Task Consume(CancellationToken token)
+        void Consume(CancellationToken token)
         {
-            while (!token.IsCancellationRequested && !seedInfosQueue.IsEmpty) await Commit();
+            while (!token.IsCancellationRequested && !seedInfosQueue.IsEmpty) Commit();
         }
 
         void GenerateSeed()
         {
+            var toGenerate = new List<int>();
+            var seedInfos = new List<SeedInfo>();
+
             while (seedsQueue.TryDequeue(out var takenSeed))
             {
-                var seedInfo = SeedGenerator.GenerateSeedInfo(takenSeed, starCount);
-                seedInfosQueue.Enqueue(seedInfo);
+                toGenerate.Add(takenSeed);
+                if (toGenerate.Count >= batchSize) break;
             }
+
+            foreach (var seed in toGenerate) seedInfos.Add(SeedGenerator.GenerateSeedInfo(seed, starCount));
+
+            foreach (var seedInfo in seedInfos) seedInfosQueue.Enqueue(seedInfo);
+
+            producerCountersTotal.AddOrUpdate(Task.CurrentId!.Value, toGenerate.Count,
+                (_, oldValue) => oldValue + toGenerate.Count);
+            producerCountersLastSecond.AddOrUpdate(Task.CurrentId!.Value, toGenerate.Count,
+                (_, oldValue) => oldValue + toGenerate.Count);
         }
 
-        async Task Commit()
+        void Commit()
         {
-            var toSubmit = new List<SeedInfo>();
+            var toCommit = new List<SeedInfo>();
 
             while (seedInfosQueue.TryDequeue(out var takenSeed))
             {
-                toSubmit.Add(takenSeed);
-                if (toSubmit.Count >= batchSize) break;
+                toCommit.Add(takenSeed);
+                if (toCommit.Count >= batchSize) break;
             }
 
-            await AddAndSaveChangesInBatch(toSubmit);
+            AddAndSaveChangesInBatch(toCommit);
+            consumerCountersTotal.AddOrUpdate(Task.CurrentId!.Value, toCommit.Count,
+                (_, oldValue) => oldValue + toCommit.Count);
+            consumerCountersLastSecond.AddOrUpdate(Task.CurrentId!.Value, toCommit.Count,
+                (_, oldValue) => oldValue + toCommit.Count);
         }
     }
 
